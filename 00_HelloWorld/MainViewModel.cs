@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
 using ReactiveUI;
-using System.Reactive.Disposables;
 
 namespace ReactiveAvalonia {
     public class MainViewModel : ReactiveObject {
@@ -24,7 +23,7 @@ namespace ReactiveAvalonia {
             set => this.RaiseAndSetIfChanged(ref _greeting, value);
         }
 
-        private static string[] Adjectives = {
+        private static readonly string[] Adjectives = {
             "reactive",
             "expressive",
             "clear",

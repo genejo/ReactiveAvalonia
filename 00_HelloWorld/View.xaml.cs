@@ -14,7 +14,7 @@ namespace ReactiveAvalonia
         public MainView() {
             ViewModel = new MainViewModel();
 
-			this
+            this
                 .WhenActivated(
                     d => {
                         this
