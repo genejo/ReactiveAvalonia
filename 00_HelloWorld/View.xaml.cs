@@ -2,12 +2,9 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
-using System.Reactive.Linq;
 using System.Reactive.Disposables;
-using System;
 
-namespace ReactiveAvalonia
-{
+namespace ReactiveAvalonia {
     public class MainView : ReactiveWindow<MainViewModel> {
         private TextBlock GreetingLabel => this.FindControl<TextBlock>("GreetingLabel");
 

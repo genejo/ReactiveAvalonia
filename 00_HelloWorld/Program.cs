@@ -3,10 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
 using Avalonia.ReactiveUI;
 
-namespace ReactiveAvalonia
-{
-    class Program
-    {
+namespace ReactiveAvalonia {
+    class Program {
         public static void Main(string[] args) {
             BuildAvaloniaApp().Start(AppMain, args);
         }
