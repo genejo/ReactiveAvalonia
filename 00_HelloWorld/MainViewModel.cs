@@ -14,7 +14,7 @@ namespace ReactiveAvalonia {
 
             this
                 .WhenAnyValue(vm => vm.Greeting)
-                .Do(name => Console.WriteLine($"[vm]: Greeting set to \"{name}\""))
+                .Do(name => Console.WriteLine($"[vm]: Greeting just became: \"{name}\""))
                 .Subscribe();
         }
 

@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
@@ -10,7 +9,7 @@ using System;
 namespace ReactiveAvalonia
 {
     public class MainView : ReactiveWindow<MainViewModel> {
-        private TextBlock _greetingLabel => this.FindControl<TextBlock>("GreetingLabel");
+        private TextBlock GreetingLabel => this.FindControl<TextBlock>("GreetingLabel");
 
         public MainView() {
             ViewModel = new MainViewModel();
@@ -18,21 +17,11 @@ namespace ReactiveAvalonia
 			this
                 .WhenActivated(
                     d => {
-                        //*
                         this
-                            .OneWayBind(ViewModel, vm => vm.Greeting, v => v._greetingLabel.Text)
+                            .OneWayBind(ViewModel, vm => vm.Greeting, v => v.GreetingLabel.Text)
                             .DisposeWith(d);
-                        /*/
-                        this
-                            .WhenAnyValue(x => x.ViewModel.Greeting)
-                            .Subscribe(
-                                x => {
-                                    Console.WriteLine($"[v ]: Name is now {x}");
-                                    Texty.Text = x;
-                                })
-                            .DisposeWith(disposables);
-                        //*/
                     });
+
             InitializeComponent();
         }
 
