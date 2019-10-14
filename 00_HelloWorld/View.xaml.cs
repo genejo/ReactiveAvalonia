@@ -4,7 +4,7 @@ using Avalonia.ReactiveUI;
 using ReactiveUI;
 using System.Reactive.Disposables;
 
-namespace ReactiveAvalonia {
+namespace ReactiveAvalonia.HelloWorld {
     public class MainView : ReactiveWindow<MainViewModel> {
         private TextBlock GreetingLabel => this.FindControl<TextBlock>("GreetingLabel");
 

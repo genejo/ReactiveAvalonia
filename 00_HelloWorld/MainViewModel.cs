@@ -2,7 +2,7 @@
 using System.Reactive.Linq;
 using ReactiveUI;
 
-namespace ReactiveAvalonia {
+namespace ReactiveAvalonia.HelloWorld {
     public class MainViewModel : ReactiveObject {
         public MainViewModel() {
             Observable
