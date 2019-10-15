@@ -18,17 +18,24 @@ namespace ReactiveAvalonia.HelloWorld {
         public MainView() {
             ViewModel = new MainViewModel();
 
+            //https://reactiveui.net/docs/handbook/when-activated/#views
             this
                 .WhenActivated(
                     disposables => {
-                        Console.WriteLine($"[v  { Thread.CurrentThread.ManagedThreadId}]: View activated");
+                        Console.WriteLine(
+                            $"[v  { Thread.CurrentThread.ManagedThreadId}]: " +
+                            $"View activated\n");
 
                         this
                             .OneWayBind(ViewModel, vm => vm.Greeting, v => v.GreetingLabel.Text)
                             .DisposeWith(disposables);
 
                         Disposable
-                            .Create(() => Console.WriteLine($"[v  {Thread.CurrentThread.ManagedThreadId}]: View deactivated"))
+                            .Create(
+                                () =>
+                                    Console.WriteLine(
+                                        $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
+                                        $"View deactivated"))
                             .DisposeWith(disposables);
                     });
 

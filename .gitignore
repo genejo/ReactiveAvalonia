@@ -26,6 +26,7 @@ Thumbs.db
 *.sbr
 
 .vs/
+.vscode
 packages/
 bin/
 obj/

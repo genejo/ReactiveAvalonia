@@ -28,29 +28,40 @@ namespace ReactiveAvalonia.HelloWorld {
             this.WhenActivated(
                 disposables => {
                     // https://github.com/kentcb/YouIandReactiveUI/blob/master/ViewModels/Samples/Chapter%2018/Sample%2004/ChildViewModel.cs
-                    Console.WriteLine($"[vm {Thread.CurrentThread.ManagedThreadId}]: ViewModel activated");
+                    Console.WriteLine(
+                        $"[vm {Thread.CurrentThread.ManagedThreadId}]: " +
+                        $"ViewModel activated");
 
                     // https://reactiveui.net/docs/guidelines/framework/ui-thread-and-schedulers
                     Observable
-                        .Interval(TimeSpan.FromSeconds(1))
-                        .Take(Adjectives.Length)
-                        .ObserveOn(RxApp.MainThreadScheduler)
+                        .Timer(
+                            TimeSpan.FromMilliseconds(100),
+                            TimeSpan.FromSeconds(1),
+                            RxApp.MainThreadScheduler)
+                        .Take(Traits.Length)
                         .Do(
                             t => {
-                                var newGreeting = $"Hello, {Adjectives[t % Adjectives.Length]} world !";
-                                Console.WriteLine("\n[vm {0}]: Interval Observable ->  Setting greeting to: \"{1}\"",
-                                    Thread.CurrentThread.ManagedThreadId, newGreeting);
+                                var newGreeting = $"Hello, {Traits[t % Traits.Length]} world !";
+                                Console.WriteLine(
+                                    $"[vm {Thread.CurrentThread.ManagedThreadId}]: " +
+                                    $"Timer Observable -> " +
+                                    $"Setting greeting to: \"{newGreeting}\"");
                                 Greeting = newGreeting;
                             },
-                            () => Console.WriteLine("\nThose are all the greetings, folks! " +
+                            () => Console.WriteLine("Those are all the greetings, folks! " +
                                 "Feel free to close the window now...\n"))
                         .Subscribe()
                         .DisposeWith(disposables);
 
+
                     // https://github.com/kentcb/YouIandReactiveUI/blob/master/ViewModels/Samples/Chapter%2018/Sample%2004/ChildViewModel.cs
                     // Nothing other than logging the ViewModel's deactivation
                     Disposable
-                        .Create(() => Console.WriteLine($"[vm {Thread.CurrentThread.ManagedThreadId}]: ViewModel deactivated"))
+                        .Create(
+                            () =>
+                                Console.WriteLine(
+                                    $"[vm {Thread.CurrentThread.ManagedThreadId}]: " +
+                                    $"ViewModel deactivated"))
                         .DisposeWith(disposables);
                 });
 
@@ -59,11 +70,16 @@ namespace ReactiveAvalonia.HelloWorld {
             this
                 .WhenAnyValue(vm => vm.Greeting)
                 .Skip(1)
-                .Do(name => Console.WriteLine($"[vm {Thread.CurrentThread.ManagedThreadId}]: WhenAnyValue() -> Greeting value changed to: \"{name}\""))
+                .Do(
+                    greeting =>
+                        Console.WriteLine(
+                            $"[vm {Thread.CurrentThread.ManagedThreadId}]: " +
+                            $"WhenAnyValue()   -> " +
+                            $"Greeting value changed to: \"{greeting}\"\n"))
                 .Subscribe();
         }
-
-        private static readonly string[] Adjectives = {
+                                    
+        private static readonly string[] Traits = {
             "expressive",
             "clear",
             "responsive",

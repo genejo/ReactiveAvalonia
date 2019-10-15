@@ -12,7 +12,5 @@
     <TextBlock Name="GreetingLabel"
                VerticalAlignment="Center"
                HorizontalAlignment="Center"
-               FontSize="16">
-        Hello, reactive world!
-    </TextBlock>
+               FontSize="16"/>
 </Window>
