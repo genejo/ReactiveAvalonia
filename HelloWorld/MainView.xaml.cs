@@ -21,14 +21,14 @@ namespace ReactiveAvalonia.HelloWorld {
             this
                 .WhenActivated(
                     disposables => {
-                        Console.WriteLine($"[v  { Thread.CurrentThread.ManagedThreadId}]: View Activated");
+                        Console.WriteLine($"[v  { Thread.CurrentThread.ManagedThreadId}]: View activated");
 
                         this
                             .OneWayBind(ViewModel, vm => vm.Greeting, v => v.GreetingLabel.Text)
                             .DisposeWith(disposables);
 
                         Disposable
-                            .Create(() => Console.WriteLine($"[v  {Thread.CurrentThread.ManagedThreadId}]: View Deactivated"))
+                            .Create(() => Console.WriteLine($"[v  {Thread.CurrentThread.ManagedThreadId}]: View deactivated"))
                             .DisposeWith(disposables);
                     });
 

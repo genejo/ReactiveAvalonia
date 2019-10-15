@@ -4,7 +4,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         x:Class="ReactiveAvalonia.HelloWorld.MainView"
         Title="HelloWorld"
-        WindowStartupLocation="CenterOwner"
         Width="320"
         Height="200"
         >

@@ -32,13 +32,18 @@ namespace ReactiveAvalonia.HelloWorld {
 
                     // https://reactiveui.net/docs/guidelines/framework/ui-thread-and-schedulers
                     Observable
-                        .Interval(TimeSpan.FromSeconds(2))
+                        .Interval(TimeSpan.FromSeconds(1))
+                        .Take(Adjectives.Length)
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Do(
                             t => {
-                                Greeting = $"Hello, {Adjectives[t % Adjectives.Length]} world !";
-                                Console.WriteLine($"[vm {Thread.CurrentThread.ManagedThreadId}]: Interval Observable -> Greeting set to \"{Greeting}\"");
-                            })
+                                var newGreeting = $"Hello, {Adjectives[t % Adjectives.Length]} world !";
+                                Console.WriteLine("\n[vm {0}]: Interval Observable ->  Setting greeting to: \"{1}\"",
+                                    Thread.CurrentThread.ManagedThreadId, newGreeting);
+                                Greeting = newGreeting;
+                            },
+                            () => Console.WriteLine("\nThose are all the greetings, folks! " +
+                                "Feel free to close the window now...\n"))
                         .Subscribe()
                         .DisposeWith(disposables);
 
@@ -59,11 +64,12 @@ namespace ReactiveAvalonia.HelloWorld {
         }
 
         private static readonly string[] Adjectives = {
-            "reactive",
             "expressive",
             "clear",
+            "responsive",
+            "vibrant",
             "concurrent",
-            "responsive"
+            "reactive"
         };
     }
 }

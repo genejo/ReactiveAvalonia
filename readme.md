@@ -9,9 +9,9 @@ Used packages:
 * Avalonia.Desktop (0.8.999)
 * Avalonia.Reactiveui (0.8.999)
 
-Not that if you don't find these packages on [nuget.org](https://www.nuget.org) you need to add this source:
+Note that if you don't find these packages on [nuget.org](https://www.nuget.org) you'll need to add this source:
 * https://www.myget.org/F/avalonia-ci/api/v2
 
-😊
-Cheers,
+😊  
+Cheers,  
 Gene
