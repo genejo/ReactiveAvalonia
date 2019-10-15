@@ -2,10 +2,17 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
+using System;
 using System.Reactive.Disposables;
+using System.Threading;
 
 namespace ReactiveAvalonia.HelloWorld {
+
+    // http://avaloniaui.net/docs/reactiveui/activation#activation-example
+    // https://reactiveui.net/docs/handbook/data-binding/avalonia
     public class MainView : ReactiveWindow<MainViewModel> {
+
+        // https://reactiveui.net/docs/handbook/data-binding/avalonia
         private TextBlock GreetingLabel => this.FindControl<TextBlock>("GreetingLabel");
 
         public MainView() {
@@ -13,16 +20,23 @@ namespace ReactiveAvalonia.HelloWorld {
 
             this
                 .WhenActivated(
-                    d => {
+                    disposables => {
+                        Console.WriteLine($"[v  { Thread.CurrentThread.ManagedThreadId}]: View Activated");
+
                         this
                             .OneWayBind(ViewModel, vm => vm.Greeting, v => v.GreetingLabel.Text)
-                            .DisposeWith(d);
+                            .DisposeWith(disposables);
+
+                        Disposable
+                            .Create(() => Console.WriteLine($"[v  {Thread.CurrentThread.ManagedThreadId}]: View Deactivated"))
+                            .DisposeWith(disposables);
                     });
 
             InitializeComponent();
         }
 
         private void InitializeComponent() {
+            // https://reactiveui.net/docs/handbook/data-binding/avalonia
             AvaloniaXamlLoader.Load(this);
         }
     }

@@ -4,11 +4,12 @@ using Avalonia.Logging.Serilog;
 using Avalonia.ReactiveUI;
 
 namespace ReactiveAvalonia.HelloWorld {
-    class Program {
-        public static void Main(string[] args) {
-            BuildAvaloniaApp().Start(AppMain, args);
-        }
 
+    // You may want to start here:
+    // https://reactiveui.net/docs/getting-started/
+
+    class Program {
+        // http://avaloniaui.net/docs/reactiveui/
         public static AppBuilder BuildAvaloniaApp() {
             return AppBuilder
                 .Configure<App>()
@@ -19,6 +20,10 @@ namespace ReactiveAvalonia.HelloWorld {
 
         private static void AppMain(Application app, string[] args) {
             app.Run(new MainView());
+        }
+
+        public static void Main(string[] args) {
+            BuildAvaloniaApp().Start(AppMain, args);
         }
     }
 }
