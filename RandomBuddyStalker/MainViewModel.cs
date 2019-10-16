@@ -15,34 +15,31 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
             this.WhenActivated(
                 disposables => {
-                    Console.WriteLine($"[vm {Thread.CurrentThread.ManagedThreadId}]: ViewModel activated");
+                    Console.WriteLine(
+                        $"[vm {Thread.CurrentThread.ManagedThreadId}]: " +
+                        "ViewModel activated");
 
                     Disposable
-                        .Create(() => Console.WriteLine($"[vm {Thread.CurrentThread.ManagedThreadId}]: ViewModel deactivated"))
+                        .Create(
+                            () => 
+                                Console.WriteLine(
+                                    $"[vm {Thread.CurrentThread.ManagedThreadId}]: " +
+                                    "ViewModel deactivated"))
                         .DisposeWith(disposables);
 
                     Observable
-                        .Interval(TimeSpan.FromSeconds(3))
+                        .Interval(TimeSpan.FromSeconds(3), RxApp.MainThreadScheduler)
                         .Take(10)
-                        .ObserveOn(RxApp.MainThreadScheduler)
                         .Select(_ => Observable.FromAsync(async () => await GetRandomUser()))
                         .Concat()
                         .Subscribe(
-                            x => Console.WriteLine($"[vm {Thread.CurrentThread.ManagedThreadId}]: ++ {x}"),
+                            x => {
+                                Console.WriteLine(
+                                    $"[vm {Thread.CurrentThread.ManagedThreadId}]: => {x}");
+                            },
                             err => Console.WriteLine($"error: {err}"),
                             () => Console.WriteLine("Quota reached... Try later please :) !"))
                         .DisposeWith(disposables);
-                    //Observable
-                    //    .Interval(TimeSpan.FromSeconds(1))
-                    //    .ObserveOn(RxApp.MainThreadScheduler)
-                    //    .Select(_ => Observable.FromAsync(async () => await GetRandomUser()))
-                    //    .Concat()
-                    //    .Subscribe(
-                    //        user => {
-                    //            Console.WriteLine($"[vm {Thread.CurrentThread.ManagedThreadId}]: {user}\n");
-                    //        })
-                    //    .DisposeWith(disposables);
-
                 });
                 //IObservable<string> stringobs;
                 //stringobs
@@ -76,7 +73,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         public string RightBuddyName { get; set; }
 
         private async Task<string> GetRandomUser() {
-            // Last time I checked there were 1 users with id's in [1..12]
+            // Last time I checked there were 12 users with id's from [1..12]
             int userId = _randomizer.Next() % 12 + 1;
             string getResp = await $"https://reqres.in/api/users/{userId}".GetStringAsync();
             //Console.Write($"[g  {Thread.CurrentThread.ManagedThreadId}]... ");

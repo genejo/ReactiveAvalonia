@@ -29,23 +29,6 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                                         $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
                                         "View deactivated"))
                             .DisposeWith(disposables);
-
-                        Observable
-                            .Interval(TimeSpan.FromSeconds(1))
-                            .Take(1)
-                            .ObserveOn(RxApp.MainThreadScheduler)
-                            .Subscribe(
-                                _ => {
-                                    Console.WriteLine(
-                                        $"--[v  {Thread.CurrentThread.ManagedThreadId}]: " +
-                                        $"{tblBuddyInfo.Text}");
-                                    Console.WriteLine(
-                                        $"--[v  {Thread.CurrentThread.ManagedThreadId}]: " +
-                                        $"{btnStalkBuddy.Name}");
-                                },
-                                err => Console.WriteLine($"error: {err}"),
-                                () => { Console.WriteLine("Done with the introductions..."); })
-                            .DisposeWith(disposables);
                     });
 
             InitializeComponent();
