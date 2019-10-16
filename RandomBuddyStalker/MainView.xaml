@@ -1,0 +1,36 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        x:Class="ReactiveAvalonia.RandomBuddyStalker.MainView"
+        Title="RandomBuddyStalker"
+        WindowStartupLocation="CenterOwner"
+        Width="640"
+        Height="480"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Center"
+        >
+
+    <Grid ColumnDefinitions="*,*">
+        <DockPanel Grid.Column="0">
+            <Button Name="btnStalkLeftBuddy"
+                    DockPanel.Dock="Bottom"
+                    Height="64"
+                    Margin="8, 8, 4, 8">Stalk left buddy</Button>
+            <TextBlock Name="tblLeftBuddyInfo"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontSize="16" Text="Left buddy name"/>
+        </DockPanel>
+        <DockPanel Grid.Column="1">
+            <Button Name="btnStalkRightBuddy"
+                    DockPanel.Dock="Bottom"
+                    Height="64"
+                    Margin="8, 8, 4, 8">Stalk right buddy</Button>
+            <TextBlock Name="tblRightBuddyInfo"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontSize="16" Text="Right buddy name"/>
+        </DockPanel>
+    </Grid>
+</Window>
