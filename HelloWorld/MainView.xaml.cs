@@ -23,8 +23,8 @@ namespace ReactiveAvalonia.HelloWorld {
                 .WhenActivated(
                     disposables => {
                         Console.WriteLine(
-                            $"[v  { Thread.CurrentThread.ManagedThreadId}]: " +
-                            $"View activated\n");
+                            $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
+                            "View activated\n");
 
                         this
                             .OneWayBind(ViewModel, vm => vm.Greeting, v => v.GreetingLabel.Text)
@@ -35,7 +35,7 @@ namespace ReactiveAvalonia.HelloWorld {
                                 () =>
                                     Console.WriteLine(
                                         $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
-                                        $"View deactivated"))
+                                        "View deactivated"))
                             .DisposeWith(disposables);
                     });
 

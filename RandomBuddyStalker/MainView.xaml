@@ -1,36 +1,48 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        x:Class="ReactiveAvalonia.RandomBuddyStalker.MainView"
-        Title="RandomBuddyStalker"
-        WindowStartupLocation="CenterOwner"
-        Width="640"
-        Height="480"
-        VerticalAlignment="Center"
-        HorizontalAlignment="Center"
-        >
+<Window
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Class="ReactiveAvalonia.RandomBuddyStalker.MainView"
+    Title="RandomBuddyStalker"
+    WindowStartupLocation="CenterOwner"
+    Width="320"
+    Height="480"
+    MinWidth="320"
+    MinHeight="320"
+    VerticalAlignment="Center"
+    HorizontalAlignment="Center">
 
-    <Grid ColumnDefinitions="*,*">
-        <DockPanel Grid.Column="0">
-            <Button Name="btnStalkLeftBuddy"
-                    DockPanel.Dock="Bottom"
-                    Height="64"
-                    Margin="8, 8, 4, 8">Stalk left buddy</Button>
-            <TextBlock Name="tblLeftBuddyInfo"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Center"
-                       FontSize="16" Text="Left buddy name"/>
-        </DockPanel>
-        <DockPanel Grid.Column="1">
-            <Button Name="btnStalkRightBuddy"
-                    DockPanel.Dock="Bottom"
-                    Height="64"
-                    Margin="8, 8, 4, 8">Stalk right buddy</Button>
-            <TextBlock Name="tblRightBuddyInfo"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Center"
-                       FontSize="16" Text="Right buddy name"/>
-        </DockPanel>
-    </Grid>
+    <DockPanel Grid.Column="0">
+        <TextBlock
+            Name="tblBuddyInfo"
+            DockPanel.Dock="Top"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"
+            FontSize="24"
+            Margin="16, 16, 16, 0"
+            Text="Buddy name"/>
+        <Button 
+            Name="btnStalkBuddy"
+            DockPanel.Dock="Bottom"
+            Height="64"
+            FontSize="20"
+            Margin="16"
+            >Stalk buddy</Button>
+        <TextBlock
+            Name="tblNewBuddyTimer"
+            DockPanel.Dock="Bottom"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"
+            Margin="16, 0"
+            FontSize="16" Text="New buddy in X seconds"/>
+        <Border
+            Background="LightGray"
+            BorderBrush="Black"
+            BorderThickness="1"
+            Margin="16"
+            CornerRadius="8"
+            Width="128"
+            Height="128"/>
+    </DockPanel>
 </Window>

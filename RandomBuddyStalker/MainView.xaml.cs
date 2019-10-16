@@ -9,10 +9,8 @@ using System.Reactive.Linq;
 
 namespace ReactiveAvalonia.RandomBuddyStalker {
     public class MainView : ReactiveWindow<MainViewModel> {
-        private TextBlock tblLeftBuddyInfo => this.FindControl<TextBlock>("tblLeftBuddyInfo");
-        private TextBlock tblRightBuddyInfo => this.FindControl<TextBlock>("tblRightBuddyInfo");
-        private Button btnStalkLeftBuddy => this.FindControl<Button>("btnStalkLeftBuddy");
-        private Button btnStalkRightBuddy => this.FindControl<Button>("btnStalkRightBuddy");
+        private TextBlock tblBuddyInfo => this.FindControl<TextBlock>("tblBuddyInfo");
+        private Button btnStalkBuddy => this.FindControl<Button>("btnStalkBuddy");
 
         public MainView() {
             ViewModel = new MainViewModel();
@@ -20,10 +18,16 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             this
                 .WhenActivated(
                     disposables => {
-                        Console.WriteLine($"[v  { Thread.CurrentThread.ManagedThreadId}]: View activated");
+                        Console.WriteLine(
+                            $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
+                            "View activated");
 
                         Disposable
-                            .Create(() => Console.WriteLine($"[v  {Thread.CurrentThread.ManagedThreadId}]: View deactivated"))
+                            .Create(
+                                () => 
+                                    Console.WriteLine(
+                                        $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
+                                        "View deactivated"))
                             .DisposeWith(disposables);
 
                         Observable
@@ -32,10 +36,12 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .ObserveOn(RxApp.MainThreadScheduler)
                             .Subscribe(
                                 _ => {
-                                    Console.WriteLine($"--[v  {Thread.CurrentThread.ManagedThreadId}]: {tblLeftBuddyInfo.Text}");
-                                    Console.WriteLine($"--[v  {Thread.CurrentThread.ManagedThreadId}]: {tblRightBuddyInfo.Text}");
-                                    Console.WriteLine($"--[v  {Thread.CurrentThread.ManagedThreadId}]: {btnStalkLeftBuddy.Name}");
-                                    Console.WriteLine($"--[v  {Thread.CurrentThread.ManagedThreadId}]: {btnStalkRightBuddy.Name}");
+                                    Console.WriteLine(
+                                        $"--[v  {Thread.CurrentThread.ManagedThreadId}]: " +
+                                        $"{tblBuddyInfo.Text}");
+                                    Console.WriteLine(
+                                        $"--[v  {Thread.CurrentThread.ManagedThreadId}]: " +
+                                        $"{btnStalkBuddy.Name}");
                                 },
                                 err => Console.WriteLine($"error: {err}"),
                                 () => { Console.WriteLine("Done with the introductions..."); })
