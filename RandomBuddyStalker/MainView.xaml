@@ -30,7 +30,7 @@
             Margin="16"
             >Stalk buddy</Button>
         <TextBlock
-            Name="tblNewBuddyTimer"
+            Name="tblDecisionTimeLeft"
             DockPanel.Dock="Bottom"
             VerticalAlignment="Center"
             HorizontalAlignment="Center"
