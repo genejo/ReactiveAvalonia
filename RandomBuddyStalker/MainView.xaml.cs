@@ -6,13 +6,13 @@ using System;
 using System.Reactive.Disposables;
 using System.Threading;
 using System.Reactive.Linq;
+using System.ComponentModel;
 
 namespace ReactiveAvalonia.RandomBuddyStalker {
     public class MainView : ReactiveWindow<MainViewModel> {
         private TextBlock tblBuddyInfo => this.FindControl<TextBlock>("tblBuddyInfo");
         private TextBlock tblDecisionTimeLeft => this.FindControl<TextBlock>("tblDecisionTimeLeft");
         private Button btnStalkBuddy => this.FindControl<Button>("btnStalkBuddy");
-
 
         public MainView() {
             ViewModel = new MainViewModel();
@@ -31,20 +31,24 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                                         $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
                                         "View deactivated"))
                             .DisposeWith(disposables);
+
                         
-                        // this
-                        //      .OneWayBind(ViewModel, vm => vm.Remaining, v => v.tblDecisionTimeLeft.Text);
+                        
                         this
-                            .WhenAnyValue(v => v.ViewModel.Remaining)
-                            .ObserveOn(RxApp.MainThreadScheduler)
-                            .Subscribe(x => 
-                            {
-                                tblDecisionTimeLeft.Text = x.ToString();
-                            })
-                            .DisposeWith(disposables);
+                             .OneWayBind(ViewModel, vm => vm.Remaining, v => v.tblDecisionTimeLeft.Text);
+                        // this
+                        //     .WhenAnyValue(v => v.ViewModel.Remaining)
+                        //     .Subscribe(x => {
+                        //         tblDecisionTimeLeft.Text = x.ToString();
+                        //     })
+                        //     .DisposeWith(disposables);
                     });
 
             InitializeComponent();
+        }
+
+        void WindowClosing(object sender, CancelEventArgs e) {
+            Console.WriteLine("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         }
 
         private void InitializeComponent() {

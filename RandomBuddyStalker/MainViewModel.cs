@@ -14,7 +14,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         private static int DecisionTime = 1000;
 
         private int GetPseudoTimeNowMs() {
-            // 10000000 ms - a bit less than 3 hours
+            // 10,000,000 ms ~= almost 3 hours
             return (int)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() % 10000000);
         }
         private int GetTimeSinceStart() {
@@ -28,9 +28,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
         private volatile int _lastDecisionStartTime;
 
-        //private object _locker = new object();
-
-        private int _decisionsLeftCount = 3;
+        private int _decisionsLeftCount = 4;
 
         Random randy = new Random();
 
@@ -77,17 +75,17 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
 
                     // You, I and ReactiveUI: 14.6 - scheduling
-                    // this
-                    //     .WhenAnyValue(vm => vm.Delta)
-                    //     .Sample(TimeSpan.FromMilliseconds(160))
-                    //     .Select(delta => DecisionTime - delta)
-                    //     .ObserveOn(RxApp.MainThreadScheduler)
-                    //     //.BindTo(this, vm => vm.Remaining);
-                    //     .Subscribe(x => {
-                    //         Remaining = x;
-                    //         System.Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}!{x}");
-                    //     })
-                    //     .DisposeWith(disposables);
+                    this
+                        .WhenAnyValue(vm => vm.Delta)
+                        //.Sample(TimeSpan.FromMilliseconds(30))
+                        //.Select(delta => DecisionTime - delta)
+                        .ObserveOn(RxApp.MainThreadScheduler)
+                        //.BindTo(this, vm => vm.Remaining);
+                        .Subscribe(delta => {
+                            Remaining = DecisionTime - delta;
+                            System.Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}!{delta}");
+                        })
+                        .DisposeWith(disposables);
                         
                         //.ObserveOn(RxApp.MainThreadScheduler)
                         // .Do(delta => {
@@ -100,23 +98,8 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                         // })
                         // .Subscribe();
                     
-                    // this
-                    //     .WhenAnyValue(vm => vm.Delta)
-                    //     .Do(
-                    //         x => {
-                    //             lock (_locker) {
-                    //                     System.Console.WriteLine($"Left: {_decisionsLeftCount}");
-                    //                     if (_decisionsLeftCount == 0)
-                    //                         _frenzyOn = false;
-                    //                 }
-                    //             }
-
-                    //             System.Console.WriteLine($"deltuta: {x,5}");
-                    //         }
-                    //     )
-                    //     .Subscribe();
                 });
-            Remaining = 123;
+            //Remaining = 123;
         }
 
         Random _randomizer = new Random();
@@ -136,22 +119,20 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                 _startTime = GetPseudoTimeNowMs();
                 _lastDecisionStartTime = GetPseudoTimeNowMs();
                 while (_frenzyOn) {
-                    //lock (_locker) {
-                        int newDelta = GetPseudoTimeNowMs() - _lastDecisionStartTime;
+                    int newDelta = GetPseudoTimeNowMs() - _lastDecisionStartTime;
 
-                        if (newDelta > DecisionTime) {
-                            _decisionsLeftCount--;
-                            System.Console.WriteLine("@@@@" + _decisionsLeftCount);
-                            if (_decisionsLeftCount == 0)
-                                break;
+                    if (newDelta > DecisionTime) {
+                        _decisionsLeftCount--;
+                        System.Console.WriteLine("@@@@ " + _decisionsLeftCount);
+                        if (_decisionsLeftCount == 0)
+                            break;
 
-                            _lastDecisionStartTime += DecisionTime;
-                            newDelta -= DecisionTime;
-                        }
+                        _lastDecisionStartTime += DecisionTime;
+                        newDelta -= DecisionTime;
+                    }
 
-                        Delta = newDelta;
-                    //}
-                    Thread.Sleep(30);
+                    Delta = newDelta;
+                    Thread.Sleep(10);
                 }
             }, RxApp.TaskpoolScheduler);
         }
