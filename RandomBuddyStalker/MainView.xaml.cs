@@ -32,23 +32,18 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                                         "View deactivated"))
                             .DisposeWith(disposables);
 
-                        
-                        
                         this
-                             .OneWayBind(ViewModel, vm => vm.Remaining, v => v.tblDecisionTimeLeft.Text);
-                        // this
-                        //     .WhenAnyValue(v => v.ViewModel.Remaining)
-                        //     .Subscribe(x => {
-                        //         tblDecisionTimeLeft.Text = x.ToString();
-                        //     })
-                        //     .DisposeWith(disposables);
+                             .OneWayBind(ViewModel, vm => vm.Remaining, v => v.tblDecisionTimeLeft.Text)
+                             .DisposeWith(disposables);
                     });
 
             InitializeComponent();
         }
 
-        void WindowClosing(object sender, CancelEventArgs e) {
-            Console.WriteLine("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        void OnWindowClosing(object sender, CancelEventArgs e) {
+            Console.WriteLine(
+                $"[v {Thread.CurrentThread.ManagedThreadId}]: " +
+                "Main window closing...");
         }
 
         private void InitializeComponent() {

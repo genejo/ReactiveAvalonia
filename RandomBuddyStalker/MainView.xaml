@@ -12,7 +12,7 @@
     MinHeight="320"
     VerticalAlignment="Center"
     HorizontalAlignment="Center"
-    Closing="WindowClosing">
+    Closing="OnWindowClosing">
 
     <DockPanel Grid.Column="0">
         <TextBlock
