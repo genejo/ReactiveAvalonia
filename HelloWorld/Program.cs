@@ -10,6 +10,7 @@ namespace ReactiveAvalonia.HelloWorld {
 
     class Program {
         // http://avaloniaui.net/docs/reactiveui/
+        // https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes
         public static AppBuilder BuildAvaloniaApp() {
             return AppBuilder
                 .Configure<App>()

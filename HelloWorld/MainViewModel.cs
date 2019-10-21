@@ -22,21 +22,25 @@ namespace ReactiveAvalonia.HelloWorld {
         }
 
         public MainViewModel() {
+
             // https://reactiveui.net/docs/handbook/when-activated/
             Activator = new ViewModelActivator();
 
             this.WhenActivated(
                 disposables => {
+
+                    // Just log the ViewModel's activation
                     // https://github.com/kentcb/YouIandReactiveUI/blob/master/ViewModels/Samples/Chapter%2018/Sample%2004/ChildViewModel.cs
                     Console.WriteLine(
                         $"[vm {Thread.CurrentThread.ManagedThreadId}]: " +
                         $"ViewModel activated");
 
+                    // Asynchronously generate a new greeting message once every second
                     // https://reactiveui.net/docs/guidelines/framework/ui-thread-and-schedulers
                     Observable
                         .Timer(
-                            TimeSpan.FromMilliseconds(100),
-                            TimeSpan.FromSeconds(1),
+                            TimeSpan.FromMilliseconds(100), // give the view time to activate
+                            TimeSpan.FromMilliseconds(1000),
                             RxApp.MainThreadScheduler)
                         .Take(Traits.Length)
                         .Do(
@@ -48,14 +52,15 @@ namespace ReactiveAvalonia.HelloWorld {
                                     $"Setting greeting to: \"{newGreeting}\"");
                                 Greeting = newGreeting;
                             },
-                            () => Console.WriteLine("Those are all the greetings, folks! " +
-                                "Feel free to close the window now...\n"))
+                            () => 
+                                Console.WriteLine(
+                                    "Those are all the greetings, folks! " +
+                                    "Feel free to close the window now...\n"))
                         .Subscribe()
                         .DisposeWith(disposables);
 
-
+                    // Just log the ViewModel's deactivation
                     // https://github.com/kentcb/YouIandReactiveUI/blob/master/ViewModels/Samples/Chapter%2018/Sample%2004/ChildViewModel.cs
-                    // Nothing other than logging the ViewModel's deactivation
                     Disposable
                         .Create(
                             () =>
@@ -65,11 +70,12 @@ namespace ReactiveAvalonia.HelloWorld {
                         .DisposeWith(disposables);
                 });
 
+            // Log any change of our greeting
             // https://reactiveui.net/docs/handbook/when-any/#basic-syntax
             // https://reactiveui.net/docs/guidelines/framework/dispose-your-subscriptions
             this
                 .WhenAnyValue(vm => vm.Greeting)
-                .Skip(1)
+                .Skip(1) // ignore the initial NullOrEmpty value of Greeting
                 .Do(
                     greeting =>
                         Console.WriteLine(
@@ -83,7 +89,6 @@ namespace ReactiveAvalonia.HelloWorld {
             "expressive",
             "clear",
             "responsive",
-            "vibrant",
             "concurrent",
             "reactive"
         };

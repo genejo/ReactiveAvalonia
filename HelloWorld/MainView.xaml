@@ -6,6 +6,8 @@
         Title="HelloWorld"
         Width="320"
         Height="200"
+        MinWidth="320"
+        MinHeight="200"
         >
     <!-- http://avaloniaui.net/docs/reactiveui/activation#activation-example - View.xaml -->
     <!-- https://reactiveui.net/docs/handbook/data-binding/avalonia -->

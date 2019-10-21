@@ -22,20 +22,23 @@ namespace ReactiveAvalonia.HelloWorld {
             this
                 .WhenActivated(
                     disposables => {
+                        // Jut log the View's activation
                         Console.WriteLine(
                             $"[v  { Thread.CurrentThread.ManagedThreadId}]: " +
                             $"View activated\n");
 
-                        this
-                            .OneWayBind(ViewModel, vm => vm.Greeting, v => v.GreetingLabel.Text)
-                            .DisposeWith(disposables);
-
+                        // Just log the View's deactivation
                         Disposable
                             .Create(
                                 () =>
                                     Console.WriteLine(
                                         $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
                                         $"View deactivated"))
+                            .DisposeWith(disposables);
+
+                        // https://reactiveui.net/docs/handbook/data-binding/
+                        this
+                            .OneWayBind(ViewModel, vm => vm.Greeting, v => v.GreetingLabel.Text)
                             .DisposeWith(disposables);
                     });
 
