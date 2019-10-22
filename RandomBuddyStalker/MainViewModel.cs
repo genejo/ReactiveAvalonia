@@ -11,11 +11,11 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
     public class MainViewModel : ReactiveObject, IActivatableViewModel {
         public ViewModelActivator Activator { get; }
 
-        private static int DecisionTime = 1000;
+        private const int DecisionTime = 1000;
+        private const int hourMsCount = 3600000;
 
         private int GetPseudoTimeNowMs() {
-            // 10,000,000 ms ~= almost 3 hours
-            return (int)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() % 10000000);
+            return (int)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() % hourMsCount);
         }
         private int GetTimeSinceStart() {
             return GetPseudoTimeNowMs() - _startTime;
