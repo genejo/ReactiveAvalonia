@@ -6,8 +6,13 @@ using Flurl.Http;
 using System.Threading;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
+using System.Reactive;
 
 namespace ReactiveAvalonia.RandomBuddyStalker {
+
+    // This guy shows quite a bit
+    // [Archive](https://www.nequalsonelifestyle.com/archive/#2019)
+
     public class MainViewModel : ReactiveObject, IActivatableViewModel {
         public ViewModelActivator Activator { get; }
 
@@ -41,15 +46,15 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
             this.WhenActivated(
                 disposables => {
-                    var timeKeeper = RunTimeKeeperAsync();
+                    //var timeKeeper = RunTimeKeeperAsync();
                     Console.WriteLine($"[vm {GetThreadId()}]: ViewModel activated");
 
                     Disposable
                         .Create(
                             () => {
-                                _frenzyOn = false;
+                                //_frenzyOn = false;
                                 // TODO: see if I can use a timeout?
-                                timeKeeper.Wait();
+                                //timeKeeper.Wait();
                                 Console.WriteLine(
                                     $"[vm {GetThreadId()}]: " +
                                     "ViewModel deactivated");
@@ -83,7 +88,6 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                         //.BindTo(this, vm => vm.Remaining);
                         .Subscribe(delta => {
                             Remaining = DecisionTime - delta;
-                            System.Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}!{delta}");
                         })
                         .DisposeWith(disposables);
                         
@@ -99,6 +103,8 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                         // .Subscribe();
                     
                 });
+            PerformCommand = ReactiveCommand.Create(Perform);
+
             //Remaining = 123;
         }
 
@@ -113,42 +119,28 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         [Reactive]
         public int Delta { get; set; }
 
-        private bool _frenzyOn = true;
-        private async Task RunTimeKeeperAsync() {
-            await Observable.Start(() => {
-                _startTime = GetPseudoTimeNowMs();
-                _lastDecisionStartTime = GetPseudoTimeNowMs();
-                while (_frenzyOn) {
-                    int newDelta = GetPseudoTimeNowMs() - _lastDecisionStartTime;
+        [Reactive]
+        public bool IsFetching { get; set; }
 
-                    if (newDelta > DecisionTime) {
-                        _decisionsLeftCount--;
-                        System.Console.WriteLine("@@@@ " + _decisionsLeftCount);
-                        if (_decisionsLeftCount == 0)
-                            break;
+        [Reactive]
+        public bool IsTimerPaused { get; set; }
 
-                        _lastDecisionStartTime += DecisionTime;
-                        newDelta -= DecisionTime;
-                    }
-
-                    Delta = newDelta;
-                    Thread.Sleep(10);
-                }
-            }, RxApp.TaskpoolScheduler);
+        public ReactiveCommand<Unit, Unit> PerformCommand { get; }
+        private void Perform() {
+            IsTimerPaused = !IsTimerPaused;
         }
-
-        private string GetRandomUser() {
-            System.Console.WriteLine(
-                $"[gs>{GetThreadId()}]: " +
-                $"|{GetTimeSinceStart()}| => Asking for string");
-            int userId = _randomizer.Next() % 12 + 1;            
-            var tasky = $"https://reqres.in/api/users/{userId}".GetStringAsync();
-            tasky.Wait();
-            var getResp = tasky.Result.Substring(13, 2);
-            System.Console.WriteLine(
-                $"[gs<{GetThreadId()}]: " +
-                $"|{GetTimeSinceStart()}| => String received = {getResp}");
-            return getResp;
-        }
+        // private string GetRandomUser() {
+        //     System.Console.WriteLine(
+        //         $"[gs>{GetThreadId()}]: " +
+        //         $"|{GetTimeSinceStart()}| => Asking for string");
+        //     int userId = _randomizer.Next() % 12 + 1;            
+        //     var tasky = $"https://reqres.in/api/users/{userId}".GetStringAsync();
+        //     tasky.Wait();
+        //     var getResp = tasky.Result.Substring(13, 2);
+        //     System.Console.WriteLine(
+        //         $"[gs<{GetThreadId()}]: " +
+        //         $"|{GetTimeSinceStart()}| => String received = {getResp}");
+        //     return getResp;
+        // }
     }
 }
