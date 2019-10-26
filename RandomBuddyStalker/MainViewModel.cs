@@ -5,6 +5,7 @@ using ReactiveUI.Fody.Helpers;
 using Flurl.Http;
 using System.Threading;
 using System.Reactive.Disposables;
+using System.Reactive.Concurrency;
 using System.Threading.Tasks;
 using System.Reactive;
 
@@ -60,7 +61,16 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                                     "ViewModel deactivated");
                             })
                         .DisposeWith(disposables);
-                    
+                    // Observable
+                    //     .Timer(TimeSpan.Zero, TimeSpan.FromMilliseconds(3000))
+                    //     .ObserveOn(RxApp.MainThreadScheduler)
+                    //     .Subscribe(_ => {
+                    //         Remaining = 100 - Remaining;
+                    //     })
+                    //     .DisposeWith(disposables);
+
+
+
                     // Observable
                     //     .Timer(TimeSpan.Zero, TimeSpan.FromMilliseconds(500))
                     //     .Where(_ => _isPaused == false)
@@ -87,7 +97,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                         .ObserveOn(RxApp.MainThreadScheduler)
                         //.BindTo(this, vm => vm.Remaining);
                         .Subscribe(delta => {
-                            Remaining = DecisionTime - delta;
+                            //Remaining = DecisionTime - delta;
                         })
                         .DisposeWith(disposables);
                         
@@ -103,7 +113,9 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                         // .Subscribe();
                     
                 });
-            PerformCommand = ReactiveCommand.Create(Perform);
+
+            // https://reactiveui.net/docs/handbook/scheduling/
+            PerformCommand = ReactiveCommand.Create(Perform, outputScheduler: RxApp.MainThreadScheduler);
 
             //Remaining = 123;
         }
@@ -111,7 +123,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         Random _randomizer = new Random();
 
         [Reactive]
-        public int Remaining { get; set; }
+        public double Remaining { get; set; }
 
         [Reactive]
         public string BuddyName { get; set; }
@@ -128,6 +140,9 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         public ReactiveCommand<Unit, Unit> PerformCommand { get; }
         private void Perform() {
             IsTimerPaused = !IsTimerPaused;
+            Remaining = 75 - Remaining;
+
+            RxApp.MainThreadScheduler.Schedule(() => {});
         }
         // private string GetRandomUser() {
         //     System.Console.WriteLine(

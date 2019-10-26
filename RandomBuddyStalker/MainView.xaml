@@ -22,21 +22,31 @@
             HorizontalAlignment="Center"
             FontSize="24"
             Margin="16, 16, 16, 0"
-            Text="Buddy name"/>
+            Text="Buddy name" />
         <Button 
             Name="btnStalkBuddy"
             DockPanel.Dock="Bottom"
             Height="64"
             FontSize="20"
             Margin="16"
-            Content="Stalk Buddy"/>
+            Content="Stalk Buddy" />
         <TextBlock
             Name="tblDecisionTimeLeft"
             DockPanel.Dock="Bottom"
             VerticalAlignment="Center"
             HorizontalAlignment="Center"
             Margin="16, 0"
-            FontSize="16" Text="New buddy in X seconds"/>
+            FontSize="16" Text="New buddy in X seconds" />
+        <ProgressBar
+            Name="pbLeftRemainingTime"
+            DockPanel.Dock="Left"
+            Minimum="0" Maximum="100" Value="50"
+            Orientation="Vertical" />
+        <ProgressBar
+            Name="pbRightRemainingTime"
+            DockPanel.Dock="Right"
+            Minimum="0" Maximum="100" Value="50"
+            Orientation="Vertical" />
         <Border
             Background="LightGray"
             BorderBrush="Black"
@@ -44,6 +54,6 @@
             Margin="16"
             CornerRadius="8"
             Width="128"
-            Height="128"/>
+            Height="128" />
     </DockPanel>
 </Window>
