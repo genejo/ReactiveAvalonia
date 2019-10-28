@@ -34,14 +34,6 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                                 })
                             .DisposeWith(disposables);
 
-                        // this
-                        //     .OneWayBind(_vm, vm => vm.Remaining, v => v.pbLeftTimeRemaining.Value)
-                        //     .DisposeWith(disposables);
-
-                        // this
-                        //     .OneWayBind(_vm, vm => vm.Remaining, v => v.pbRightTimeRemaining.Value)
-                        //     .DisposeWith(disposables);
-
                         this
                             .OneWayBind(_vm, vm => vm.IsFetching, v => v.btnStalkBuddy.IsEnabled,
                                 fetching => !fetching)

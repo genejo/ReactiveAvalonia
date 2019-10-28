@@ -114,8 +114,33 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                     
                 });
 
+            var canExecute =
+                this.WhenAnyValue(vm => vm.IsFetching, x => !x);
+
             // https://reactiveui.net/docs/handbook/scheduling/
-            PerformCommand = ReactiveCommand.Create(Perform, outputScheduler: RxApp.MainThreadScheduler);
+            //PerformCommand = ReactiveCommand.Create(Perform, canExecute, RxApp.MainThreadScheduler);
+
+
+            PerformCommand = ReactiveCommand.CreateFromObservable(
+                () =>
+                    Observable
+                        .Return(Unit.Default)
+                        .ObserveOn(RxApp.TaskpoolScheduler)
+                        .Do(_ => {
+                            RxApp.MainThreadScheduler.Schedule(() => {
+                                IsTimerPaused = !IsTimerPaused;
+                                Remaining = 75 - Remaining;
+                                IsFetching = true;
+                                System.Console.WriteLine($"[do-{GetThreadId()}]");
+                            });
+                            System.Console.WriteLine($"[do_{GetThreadId()}]");
+                            Thread.Sleep(1000);
+                            RxApp.MainThreadScheduler.Schedule(() => {
+                                IsFetching = false;
+                                System.Console.WriteLine($"[do+{GetThreadId()}]");
+                            });
+                        }),
+                canExecute);
 
             //Remaining = 123;
         }
@@ -139,10 +164,19 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
         public ReactiveCommand<Unit, Unit> PerformCommand { get; }
         private void Perform() {
-            IsTimerPaused = !IsTimerPaused;
-            Remaining = 75 - Remaining;
+            RxApp.MainThreadScheduler.Schedule(() => {
+                IsTimerPaused = !IsTimerPaused;
+                Remaining = 75 - Remaining;
+                IsFetching = true;
+                System.Console.WriteLine($"[sc-{GetThreadId()}]: ");
+            });
+            System.Console.WriteLine($"[pr {GetThreadId()}]: " );
+            Thread.Sleep(1000);
 
-            RxApp.MainThreadScheduler.Schedule(() => {});
+            RxApp.MainThreadScheduler.Schedule(() => {
+                IsFetching = false;
+                System.Console.WriteLine($"[sc+{GetThreadId()}]: ");
+            });
         }
         // private string GetRandomUser() {
         //     System.Console.WriteLine(

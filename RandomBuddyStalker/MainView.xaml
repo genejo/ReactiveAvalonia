@@ -8,7 +8,7 @@
     Name="wndMain"
     WindowStartupLocation="CenterOwner"
     Width="320"
-    Height="320"
+    Height="420"
     MinWidth="320"
     MinHeight="320"
     VerticalAlignment="Center"
@@ -30,6 +30,13 @@
             FontSize="20"
             Margin="16"
             Content="Stalk Buddy" />
+        <Button 
+            Name="btnExtra"
+            DockPanel.Dock="Bottom"
+            Height="64"
+            FontSize="20"
+            Margin="16"
+            Content="extra" />
         <TextBlock
             Name="tblDecisionTimeLeft"
             DockPanel.Dock="Bottom"
