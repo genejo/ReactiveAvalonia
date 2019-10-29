@@ -45,7 +45,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .DisposeWith(disposables);
 
                         this
-                            .BindCommand(_vm, vm => vm.PerformCommand, v => v.btnStalkBuddy)
+                            .BindCommand(_vm, vm => vm.FetchOrContinueCommand, v => v.btnStalkBuddy)
                             .DisposeWith(disposables);
 
                         Disposable

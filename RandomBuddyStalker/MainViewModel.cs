@@ -120,29 +120,12 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             // https://reactiveui.net/docs/handbook/scheduling/
             //PerformCommand = ReactiveCommand.Create(Perform, canExecute, RxApp.MainThreadScheduler);
 
+            //var doAsyncObservable = DoAsync().ToObservable();
 
-            PerformCommand = ReactiveCommand.CreateFromObservable(
-                () =>
-                    Observable
-                        .Return(Unit.Default)
-                        .ObserveOn(RxApp.TaskpoolScheduler)
-                        .Do(_ => {
-                            RxApp.MainThreadScheduler.Schedule(() => {
-                                IsTimerPaused = !IsTimerPaused;
-                                Remaining = 75 - Remaining;
-                                IsFetching = true;
-                                System.Console.WriteLine($"[do-{GetThreadId()}]");
-                            });
-                            System.Console.WriteLine($"[do_{GetThreadId()}]");
-                            Thread.Sleep(1000);
-                            RxApp.MainThreadScheduler.Schedule(() => {
-                                IsFetching = false;
-                                System.Console.WriteLine($"[do+{GetThreadId()}]");
-                            });
-                        }),
-                canExecute);
-
-            //Remaining = 123;
+            // https://blog.jonstodle.com/task-toobservable-observable-fromasync-task/
+            var doAsyncObservable = Observable.FromAsync(FetchOrContinue);
+            FetchOrContinueCommand = ReactiveCommand.CreateFromObservable(
+                () => doAsyncObservable, canExecute, RxApp.MainThreadScheduler);
         }
 
         Random _randomizer = new Random();
@@ -162,34 +145,21 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         [Reactive]
         public bool IsTimerPaused { get; set; }
 
-        public ReactiveCommand<Unit, Unit> PerformCommand { get; }
-        private void Perform() {
-            RxApp.MainThreadScheduler.Schedule(() => {
-                IsTimerPaused = !IsTimerPaused;
-                Remaining = 75 - Remaining;
-                IsFetching = true;
-                System.Console.WriteLine($"[sc-{GetThreadId()}]: ");
-            });
-            System.Console.WriteLine($"[pr {GetThreadId()}]: " );
-            Thread.Sleep(1000);
+        public ReactiveCommand<Unit, Unit> FetchOrContinueCommand { get; }
+        private async Task FetchOrContinue() {
+            IsTimerPaused = !IsTimerPaused;
+            Remaining = 75 - Remaining;
+            IsFetching = true;
+            System.Console.WriteLine($"[{GetThreadId()}]...doing");
 
-            RxApp.MainThreadScheduler.Schedule(() => {
-                IsFetching = false;
-                System.Console.WriteLine($"[sc+{GetThreadId()}]: ");
-            });
+            int userId = _randomizer.Next() % 12 + 1;            
+            var tasky = $"https://reqres.in/api/users/{userId}".GetStringAsync();
+            await tasky;
+            //await Task.Delay(1000);
+            System.Console.WriteLine(tasky.Result);
+            IsFetching = false;
+            System.Console.WriteLine($"[{GetThreadId()}]...done");
+            System.Console.WriteLine();
         }
-        // private string GetRandomUser() {
-        //     System.Console.WriteLine(
-        //         $"[gs>{GetThreadId()}]: " +
-        //         $"|{GetTimeSinceStart()}| => Asking for string");
-        //     int userId = _randomizer.Next() % 12 + 1;            
-        //     var tasky = $"https://reqres.in/api/users/{userId}".GetStringAsync();
-        //     tasky.Wait();
-        //     var getResp = tasky.Result.Substring(13, 2);
-        //     System.Console.WriteLine(
-        //         $"[gs<{GetThreadId()}]: " +
-        //         $"|{GetTimeSinceStart()}| => String received = {getResp}");
-        //     return getResp;
-        // }
     }
 }
