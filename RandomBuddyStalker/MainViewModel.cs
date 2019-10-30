@@ -2,10 +2,12 @@
 using System.Reactive.Linq;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using Flurl;
 using Flurl.Http;
 using System.Threading;
 using System.Reactive.Disposables;
 using System.Reactive.Concurrency;
+using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Reactive;
 
@@ -145,6 +147,8 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         [Reactive]
         public bool IsTimerPaused { get; set; }
 
+        
+
         public ReactiveCommand<Unit, Unit> FetchOrContinueCommand { get; }
         private async Task FetchOrContinue() {
             IsTimerPaused = !IsTimerPaused;
@@ -153,13 +157,47 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             System.Console.WriteLine($"[{GetThreadId()}]...doing");
 
             int userId = _randomizer.Next() % 12 + 1;            
-            var tasky = $"https://reqres.in/api/users/{userId}".GetStringAsync();
-            await tasky;
+            var userDtoFetcherTask =
+                "https://reqres.in/api/"
+                    .AppendPathSegments("users", userId)
+                    .GetJsonAsync<UserDto>();
+
+            // https://stackoverflow.com/questions/14455293/how-and-when-to-use-async-and-await
+            var user = await userDtoFetcherTask;
+            //System.Console.WriteLine($"{x.Result.Data.Email} + {x.Result.Data.FirstName}\n");
             //await Task.Delay(1000);
-            System.Console.WriteLine(tasky.Result);
+
+            // https://medium.com/rubrikkgroup/understanding-async-avoiding-deadlocks-e41f8f2c6f5d
+            // !!!!!!!!!!!!!!!
+
+            System.Console.WriteLine($"Got him: {user.Data.Email}");
             IsFetching = false;
             System.Console.WriteLine($"[{GetThreadId()}]...done");
             System.Console.WriteLine();
         }
+
+        //private async Task 
+
     }
+
+    // https://reqres.in/api/users/1
+    // https://stackoverflow.com/questions/725348/plain-old-clr-object-vs-data-transfer-object
+    public class UserDto {
+        public class DataDto {
+            [JsonProperty("id")]
+            public int Id {get; set; }
+            [JsonProperty("email")]
+            public string Email {get; set;}
+            [JsonProperty("first_name")]
+            public string FirstName {get; set;}
+            [JsonProperty("last_name")]
+            public string LastName {get; set;}
+            [JsonProperty("avatar")]
+            public string Avatar {get; set; }
+        }
+
+        [JsonProperty("data")]
+        public UserDto.DataDto Data {get; set;}
+    }
+
 }
