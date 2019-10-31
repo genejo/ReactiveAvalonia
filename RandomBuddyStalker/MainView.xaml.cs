@@ -6,7 +6,7 @@ using System;
 using System.Reactive.Disposables;
 using System.Threading;
 using System.Reactive.Linq;
-using System.ComponentModel;
+using System.Reactive;
 
 namespace ReactiveAvalonia.RandomBuddyStalker {
     public class MainView : ReactiveWindow<MainViewModel> {
@@ -45,7 +45,15 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .DisposeWith(disposables);
 
                         this
-                            .BindCommand(_vm, vm => vm.FetchOrContinueCommand, v => v.btnStalkBuddy)
+                            .BindCommand(_vm, vm => vm.StalkOrContinueCommand, v => v.btnStalkBuddy)
+                            .DisposeWith(disposables);
+
+                        // https://reactiveui.net/docs/handbook/commands/#invoking-commands-in-an-observable-pipeline
+                        Observable
+                            .FromEventPattern(wndMain, nameof(wndMain.LayoutUpdated))
+                            .Take(1)
+                            .Select(x => Unit.Default)
+                            .InvokeCommand(this, v => v.ViewModel.StalkOrContinueCommand)
                             .DisposeWith(disposables);
 
                         Disposable

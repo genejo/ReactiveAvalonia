@@ -36,7 +36,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
         private volatile int _lastDecisionStartTime;
 
-        private int _decisionsLeftCount = 4;
+        private int _decisionsLeftCount = 10;
 
         Random randy = new Random();
 
@@ -45,8 +45,9 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         //private static volatile bool _isPaused = false;
 
         public MainViewModel() {
-            Activator = new ViewModelActivator();
+            IsTimerPaused = true;
 
+            Activator = new ViewModelActivator();
             this.WhenActivated(
                 disposables => {
                     //var timeKeeper = RunTimeKeeperAsync();
@@ -63,6 +64,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                                     "ViewModel deactivated");
                             })
                         .DisposeWith(disposables);
+                    
                     // Observable
                     //     .Timer(TimeSpan.Zero, TimeSpan.FromMilliseconds(3000))
                     //     .ObserveOn(RxApp.MainThreadScheduler)
@@ -70,8 +72,6 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                     //         Remaining = 100 - Remaining;
                     //     })
                     //     .DisposeWith(disposables);
-
-
 
                     // Observable
                     //     .Timer(TimeSpan.Zero, TimeSpan.FromMilliseconds(500))
@@ -92,92 +92,88 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
 
                     // You, I and ReactiveUI: 14.6 - scheduling
-                    this
-                        .WhenAnyValue(vm => vm.Delta)
-                        //.Sample(TimeSpan.FromMilliseconds(30))
-                        //.Select(delta => DecisionTime - delta)
-                        .ObserveOn(RxApp.MainThreadScheduler)
-                        //.BindTo(this, vm => vm.Remaining);
-                        .Subscribe(delta => {
-                            //Remaining = DecisionTime - delta;
-                        })
-                        .DisposeWith(disposables);
-                        
-                        //.ObserveOn(RxApp.MainThreadScheduler)
-                        // .Do(delta => {
-                        //     //Remaining = Math.Max(0, DecisionTime - delta).ToString();
-                        //     var rem = Math.Max(0, DecisionTime - delta).ToString();
-                        //     System.Console.WriteLine($"rem: {rem}");
-                        //     var xx = randy.Next() % 4 + delta;
-                        //     Remaining = xx;
-                        //     //Remaining = rem;
-                        // })
-                        // .Subscribe();
                     
                 });
 
-            var canExecute =
-                this.WhenAnyValue(vm => vm.IsFetching, x => !x);
+            this
+                .WhenAnyValue(vm => vm.IsTimerPaused)
+                .Do(
+                    paused => {
+                        Remaining = paused ? 0 : 80;
+                        System.Console.WriteLine($"IsTimerPaused = {paused}");
+                    })
+                .Subscribe();
+
+            var canInitiateNewFetch =
+                this.WhenAnyValue(vm => vm.IsFetching, fetching => !fetching);
 
             // https://reactiveui.net/docs/handbook/scheduling/
-            //PerformCommand = ReactiveCommand.Create(Perform, canExecute, RxApp.MainThreadScheduler);
-
-            //var doAsyncObservable = DoAsync().ToObservable();
-
             // https://blog.jonstodle.com/task-toobservable-observable-fromasync-task/
-            var doAsyncObservable = Observable.FromAsync(FetchOrContinue);
-            FetchOrContinueCommand = ReactiveCommand.CreateFromObservable(
-                () => doAsyncObservable, canExecute, RxApp.MainThreadScheduler);
+            // https://github.com/reactiveui/ReactiveUI/issues/1245
+            StalkOrContinueCommand =
+                ReactiveCommand.CreateFromObservable(
+                    () => Observable.StartAsync(StalkOrContinue),
+                    canInitiateNewFetch,
+                    RxApp.MainThreadScheduler
+                );
         }
 
-        Random _randomizer = new Random();
+        private readonly Random _randomizer = new Random();
 
         [Reactive]
-        public double Remaining { get; set; }
+        public double Remaining { get; private set; }
 
         [Reactive]
-        public string BuddyName { get; set; }
+        public string BuddyName { get; private set; }
 
         [Reactive]
-        public int Delta { get; set; }
+        public bool IsFetching { get; private set; }
 
         [Reactive]
-        public bool IsFetching { get; set; }
-
-        [Reactive]
-        public bool IsTimerPaused { get; set; }
+        public bool IsTimerPaused { get; private set; }
 
         
 
-        public ReactiveCommand<Unit, Unit> FetchOrContinueCommand { get; }
-        private async Task FetchOrContinue() {
-            IsTimerPaused = !IsTimerPaused;
-            Remaining = 75 - Remaining;
+        public ReactiveCommand<Unit, Unit> StalkOrContinueCommand { get; }
+        private async Task StalkOrContinue() {
             IsFetching = true;
             System.Console.WriteLine($"[{GetThreadId()}]...doing");
 
-            int userId = _randomizer.Next() % 12 + 1;            
+            if (IsTimerPaused) {
+                await Continue();
+            }
+            else {
+                await Stalk();
+            }
+
+            IsTimerPaused = !IsTimerPaused;
+            IsFetching = false;
+            System.Console.WriteLine($"[{GetThreadId()}]...done\n");
+        }
+
+        private string _userAvatarUrl;
+
+        private async Task Stalk() {
+            // TODO: check if url is valid
+            System.Console.WriteLine($"[{GetThreadId()}]...fetching avatar");
+            byte[] bytes = await _userAvatarUrl.GetBytesAsync();
+            System.Console.WriteLine($"[{GetThreadId()}]...fetched {bytes.Length} bytes");
+        }
+        private async Task Continue() {
+            int userId = _randomizer.Next() % 12 + 1;
+            System.Console.WriteLine($"[{GetThreadId()}]...fetching data for random user {userId}");
             var userDtoFetcherTask =
                 "https://reqres.in/api/"
                     .AppendPathSegments("users", userId)
                     .GetJsonAsync<UserDto>();
 
             // https://stackoverflow.com/questions/14455293/how-and-when-to-use-async-and-await
-            var user = await userDtoFetcherTask;
-            //System.Console.WriteLine($"{x.Result.Data.Email} + {x.Result.Data.FirstName}\n");
-            //await Task.Delay(1000);
-
             // https://medium.com/rubrikkgroup/understanding-async-avoiding-deadlocks-e41f8f2c6f5d
-            // !!!!!!!!!!!!!!!
+            var user = await userDtoFetcherTask;
 
-            System.Console.WriteLine($"Got him: {user.Data.Email}");
-            IsFetching = false;
-            System.Console.WriteLine($"[{GetThreadId()}]...done");
-            System.Console.WriteLine();
+            _userAvatarUrl = user.Data.AvatarUrl;
+            System.Console.WriteLine($"[{GetThreadId()}] user avatar url: {_userAvatarUrl}");
         }
-
-        //private async Task 
-
     }
 
     // https://reqres.in/api/users/1
@@ -193,7 +189,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             [JsonProperty("last_name")]
             public string LastName {get; set;}
             [JsonProperty("avatar")]
-            public string Avatar {get; set; }
+            public string AvatarUrl {get; set; }
         }
 
         [JsonProperty("data")]
