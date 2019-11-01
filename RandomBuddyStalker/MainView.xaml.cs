@@ -26,6 +26,10 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .DisposeWith(disposables);
 
                         this
+                            .OneWayBind(_vm, vm => vm.BuddyName, v => v.tblBuddyName.Text)
+                            .DisposeWith(disposables);
+
+                        this
                             .WhenAnyValue(v => v._vm.Remaining)
                             .Subscribe(
                                 remaining => { 
@@ -35,25 +39,20 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .DisposeWith(disposables);
 
                         this
-                            .OneWayBind(_vm, vm => vm.IsFetching, v => v.btnStalkBuddy.IsEnabled,
-                                fetching => !fetching)
+                            .WhenAnyValue(v => v._vm.IsTimerRunning)
+                            .Do(running => {
+                                btnStalk.IsEnabled = running;
+                                btnContinue.IsEnabled = !running;
+                            })
+                            .Subscribe()
                             .DisposeWith(disposables);
 
                         this
-                            .OneWayBind(_vm, vm => vm.IsTimerPaused, v => v.btnStalkBuddy.Content,
-                                paused => paused ? "Continue" : "Stalk buddy")
+                            .BindCommand(_vm, vm => vm.StalkCommand, v => v.btnStalk)
                             .DisposeWith(disposables);
-
+                        
                         this
-                            .BindCommand(_vm, vm => vm.StalkOrContinueCommand, v => v.btnStalkBuddy)
-                            .DisposeWith(disposables);
-
-                        // https://reactiveui.net/docs/handbook/commands/#invoking-commands-in-an-observable-pipeline
-                        Observable
-                            .FromEventPattern(wndMain, nameof(wndMain.LayoutUpdated))
-                            .Take(1)
-                            .Select(x => Unit.Default)
-                            .InvokeCommand(this, v => v.ViewModel.StalkOrContinueCommand)
+                            .BindCommand(_vm, vm => vm.ContinueCommand, v => v.btnContinue)
                             .DisposeWith(disposables);
 
                         Disposable
@@ -83,9 +82,10 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         }
 
         private Window wndMain => this.FindControl<Window>("wndMain");
-        private TextBlock tblBuddyInfo => this.FindControl<TextBlock>("tblBuddyInfo");
+        private TextBlock tblBuddyName => this.FindControl<TextBlock>("tblBuddyName");
         private TextBlock tblDecisionTimeLeft => this.FindControl<TextBlock>("tblDecisionTimeLeft");
-        private Button btnStalkBuddy => this.FindControl<Button>("btnStalkBuddy");
+        private Button btnStalk => this.FindControl<Button>("btnStalk");
+        private Button btnContinue => this.FindControl<Button>("btnContinue");
         private ProgressBar pbLeftRemainingTime => this.FindControl<ProgressBar>("pbLeftRemainingTime");
         private ProgressBar pbRightRemainingTime => this.FindControl<ProgressBar>("pbRightRemainingTime");
     }

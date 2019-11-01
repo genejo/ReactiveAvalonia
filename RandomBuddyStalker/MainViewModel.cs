@@ -10,6 +10,7 @@ using System.Reactive.Concurrency;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Reactive;
+using System.Reactive.Subjects;
 
 namespace ReactiveAvalonia.RandomBuddyStalker {
 
@@ -45,7 +46,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         //private static volatile bool _isPaused = false;
 
         public MainViewModel() {
-            IsTimerPaused = true;
+            IsTimerRunning = false;
 
             Activator = new ViewModelActivator();
             this.WhenActivated(
@@ -59,7 +60,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                                     $"[vm {GetThreadId()}]: ViewModel deactivated" + '\n');
                             })
                         .DisposeWith(disposables);
-                    
+
                     // Observable
                     //     .Timer(TimeSpan.Zero, TimeSpan.FromMilliseconds(3000))
                     //     .ObserveOn(RxApp.MainThreadScheduler)
@@ -90,30 +91,52 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                     
                 });
 
-            this
-                .WhenAnyValue(vm => vm.IsTimerPaused)
-                .Do(
-                    paused => {
-                        Remaining = paused ? 0 : 80;
-                        System.Console.WriteLine($"IsTimerPaused = {paused}");
-                    })
-                .Subscribe();
-
             var canInitiateNewFetch =
                 this.WhenAnyValue(vm => vm.IsFetching, fetching => !fetching);
 
             // https://reactiveui.net/docs/handbook/scheduling/
             // https://blog.jonstodle.com/task-toobservable-observable-fromasync-task/
             // https://github.com/reactiveui/ReactiveUI/issues/1245
-            StalkOrContinueCommand =
+            StalkCommand =
                 ReactiveCommand.CreateFromObservable(
-                    () => Observable.StartAsync(StalkOrContinue),
+                    () => Observable.StartAsync(Stalk),
                     canInitiateNewFetch,
                     RxApp.MainThreadScheduler
                 );
+
+            ContinueCommand =
+                ReactiveCommand.CreateFromObservable(
+                    () => Observable.StartAsync(Continue),
+                    canInitiateNewFetch,
+                    RxApp.MainThreadScheduler
+                );
+
+            //https://reactiveui.net/docs/handbook/when-activated/#no-need
+            ContinueCommand.Execute().Subscribe();
+
+            // https://reactiveui.net/docs/handbook/commands/canceling#canceling-via-another-observable
+            var cancel = new Subject<Unit>();
+            var cmd = ReactiveCommand.CreateFromObservable(
+                 () => Observable
+                .Return(Unit.Default)
+                .Delay(TimeSpan.FromSeconds(3))
+                .TakeUntil(cancel)
+                );
+
+            cmd.Subscribe(_ => System.Console.WriteLine("!"));
+
+            this
+                .WhenAnyObservable(vm => vm.TriggeringTimer)
+                .Do(trigger => {
+                    IsTimerRunning = trigger == TimerTrigger.Start;
+                    Remaining = IsTimerRunning ? 80 : 0;
+                    System.Console.WriteLine($"[tt {GetThreadId()}] running={IsTimerRunning}");
+                    cancel.OnNext(Unit.Default);
+                    cmd.Execute().Subscribe();
+                })
+                .Subscribe();
         }
 
-        private readonly Random _randomizer = new Random();
 
         [Reactive]
         public double Remaining { get; private set; }
@@ -125,36 +148,35 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         public bool IsFetching { get; private set; }
 
         [Reactive]
-        public bool IsTimerPaused { get; private set; }
+        public bool IsTimerRunning { get; private set; }
 
-        
-
-        public ReactiveCommand<Unit, Unit> StalkOrContinueCommand { get; }
-        private async Task StalkOrContinue() {
-            IsFetching = true;
-            System.Console.WriteLine($"[{GetThreadId()}]...doing");
-
-            if (IsTimerPaused) {
-                await Continue();
-            }
-            else {
-                await Stalk();
-            }
-
-            IsTimerPaused = !IsTimerPaused;
-            IsFetching = false;
-            System.Console.WriteLine($"[{GetThreadId()}]...done\n");
-        }
+        public ReactiveCommand<Unit, Unit> StalkCommand { get; }
+        public ReactiveCommand<Unit, Unit> ContinueCommand { get; }
 
         private string _userAvatarUrl;
 
         private async Task Stalk() {
+            _triggeringTimer.OnNext(TimerTrigger.Stop);
+            
+            IsFetching = true;
             // TODO: check if url is valid
             System.Console.WriteLine($"[{GetThreadId()}]...fetching avatar");
             byte[] bytes = await _userAvatarUrl.GetBytesAsync();
+
+            // TODO: set bytes to reactive Image
             System.Console.WriteLine($"[{GetThreadId()}]...fetched {bytes.Length} bytes");
+            IsFetching = false;
         }
+
+        public enum TimerTrigger { Start, Stop };
+
+        //https://rehansaeed.com/reactive-extensions-part1-replacing-events/
+        private readonly Subject<TimerTrigger> _triggeringTimer = new Subject<TimerTrigger>();
+        public IObservable<TimerTrigger> TriggeringTimer => _triggeringTimer.AsObservable();
+
+        private readonly Random _randomizer = new Random();
         private async Task Continue() {
+            IsFetching = true;
             int userId = _randomizer.Next() % 12 + 1;
             System.Console.WriteLine($"[{GetThreadId()}]...fetching data for random user {userId}");
             var userDtoFetcherTask =
@@ -167,7 +189,11 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             var user = await userDtoFetcherTask;
 
             _userAvatarUrl = user.Data.AvatarUrl;
+            BuddyName = $"{user.Data.FirstName} {user.Data.LastName}";
             System.Console.WriteLine($"[{GetThreadId()}] user avatar url: {_userAvatarUrl}");
+            IsFetching = false;
+
+            _triggeringTimer.OnNext(TimerTrigger.Start);
         }
     }
 
