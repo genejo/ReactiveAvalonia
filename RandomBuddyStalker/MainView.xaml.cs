@@ -6,6 +6,7 @@ using System;
 using System.Reactive.Disposables;
 using System.Threading;
 using System.Reactive.Linq;
+using Avalonia.Media.Imaging;
 
 namespace ReactiveAvalonia.RandomBuddyStalker {
     public class MainView : ReactiveWindow<MainViewModel> {
@@ -67,6 +68,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .DisposeWith(disposables);
                     });
             InitializeComponent();
+            //imgAvatar.Source = new Bitmap("[path to image]/128.jpg");
         }
 
         private void InitializeComponent() {
@@ -80,5 +82,6 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         private Button btnContinue => this.FindControl<Button>("btnContinue");
         private ProgressBar pbLeftRemainingTime => this.FindControl<ProgressBar>("pbLeftRemainingTime");
         private ProgressBar pbRightRemainingTime => this.FindControl<ProgressBar>("pbRightRemainingTime");
+        private Image imgAvatar => this.FindControl<Image>("imgAvatar");
     }
 }

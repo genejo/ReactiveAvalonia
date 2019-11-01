@@ -65,6 +65,8 @@
             Margin="16"
             CornerRadius="8"
             Width="128"
-            Height="128" />
+            Height="128">
+            <Image Name="imgAvatar" Width="250" Height="250" />
+        </Border>
     </DockPanel>
 </Window>
