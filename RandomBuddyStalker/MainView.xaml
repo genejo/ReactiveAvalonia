@@ -14,28 +14,39 @@
     VerticalAlignment="Center"
     HorizontalAlignment="Center">
 
-    <DockPanel Grid.Column="0">
+    <DockPanel>
         <TextBlock
-            Name="tblBuddyInfo"
+            Name="tblBuddyName"
             DockPanel.Dock="Top"
             VerticalAlignment="Center"
             HorizontalAlignment="Center"
             FontSize="24"
             Margin="16, 16, 16, 0"
             Text="Buddy name" />
-        <Button 
-            Name="btnStalkBuddy"
-            DockPanel.Dock="Bottom"
-            Height="64"
-            FontSize="20"
-            Margin="16"
-            Content="Stalk Buddy" />
+        <Grid
+            ColumnDefinitions="*,*"
+            DockPanel.Dock="Bottom">
+            <Button 
+                Name="btnStalk"
+                Grid.Column="0"
+                Height="64"
+                FontSize="20"
+                Margin="16, 16, 8, 16"
+                Content="Stalk Buddy" />
+            <Button 
+                Name="btnContinue"
+                Grid.Column="1"
+                Height="64"
+                FontSize="20"
+                Margin="8, 16, 16, 16"
+                Content="Continue" />
+        </Grid>
         <Button 
             Name="btnExtra"
             DockPanel.Dock="Bottom"
             Height="64"
             FontSize="20"
-            Margin="16"
+            Margin="3"
             Content="extra" />
         <TextBlock
             Name="tblDecisionTimeLeft"
