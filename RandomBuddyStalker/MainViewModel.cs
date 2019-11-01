@@ -20,30 +20,12 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
     public class MainViewModel : ReactiveObject, IActivatableViewModel {
         public ViewModelActivator Activator { get; }
 
-        private const int DecisionTime = 1000;
-        private const int hourMsCount = 3600000;
-
-        private int GetPseudoTimeNowMs() {
-            return (int)(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() % hourMsCount);
-        }
-        private int GetTimeSinceStart() {
-            return GetPseudoTimeNowMs() - _startTime;
-        }
         private int GetThreadId() {
             return Thread.CurrentThread.ManagedThreadId;
         }
 
-        private int _startTime;
+        public readonly static int DecisionTimeSeconds = 2;
 
-        private volatile int _lastDecisionStartTime;
-
-        private int _decisionsLeftCount = 10;
-
-        Random randy = new Random();
-
-        // better solution for pausing:
-        // https://leeoades.wordpress.com/2012/12/17/pausable-observable/
-        //private static volatile bool _isPaused = false;
 
         public MainViewModel() {
             IsTimerRunning = false;
@@ -59,36 +41,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                                 Console.WriteLine(
                                     $"[vm {GetThreadId()}]: ViewModel deactivated" + '\n');
                             })
-                        .DisposeWith(disposables);
-
-                    // Observable
-                    //     .Timer(TimeSpan.Zero, TimeSpan.FromMilliseconds(3000))
-                    //     .ObserveOn(RxApp.MainThreadScheduler)
-                    //     .Subscribe(_ => {
-                    //         Remaining = 100 - Remaining;
-                    //     })
-                    //     .DisposeWith(disposables);
-
-                    // Observable
-                    //     .Timer(TimeSpan.Zero, TimeSpan.FromMilliseconds(500))
-                    //     .Where(_ => _isPaused == false)
-                    //     .Take(5)
-                    //     .Select(_ => GetRandomUser())
-                    //     .ObserveOn(RxApp.MainThreadScheduler)
-                    //     .Subscribe(
-                    //         x => {
-                    //             Console.WriteLine(
-                    //                 $"[sb {GetThreadId()}]: " +
-                    //                 $"|{GetTimeSinceStart()}| " +
-                    //                 $"=> {x}");
-                    //         },
-                    //         err => Console.WriteLine($"error: {err}"),
-                    //         () => Console.WriteLine("Stalking quota reached... Try later please :) !"))
-                    //     .DisposeWith(disposables);
-
-
-                    // You, I and ReactiveUI: 14.6 - scheduling
-                    
+                        .DisposeWith(disposables);                    
                 });
 
             var canInitiateNewFetch =
@@ -111,44 +64,46 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                     RxApp.MainThreadScheduler
                 );
 
-            //https://reactiveui.net/docs/handbook/when-activated/#no-need
+            // Run the "Continue" command once in the beginning in order to
+            // fetch the first buddy.
+            // https://reactiveui.net/docs/handbook/when-activated/#no-need
             ContinueCommand.Execute().Subscribe();
 
             // https://reactiveui.net/docs/handbook/commands/canceling#canceling-via-another-observable
-            var cancel = new Subject<Unit>();
-            var cmd = ReactiveCommand.CreateFromObservable(
-                 () => Observable
-                .Return(Unit.Default)
-                .Delay(TimeSpan.FromSeconds(3))
-                .TakeUntil(cancel)
-                );
+            var startTimerCommand = ReactiveCommand.CreateFromObservable(
+                    () =>
+                        Observable
+                            .Return(Unit.Default)
+                            .Delay(TimeSpan.FromSeconds(DecisionTimeSeconds))
+                            .TakeUntil(
+                                _triggeringTheTimer
+                                    .Where(trigger => trigger == TimerTrigger.Stop)));
 
-            cmd.Subscribe(_ => System.Console.WriteLine("!"));
+            startTimerCommand.Subscribe(_ => 
+                ContinueCommand.Execute().Subscribe());
 
             this
-                .WhenAnyObservable(vm => vm.TriggeringTimer)
+                .WhenAnyObservable(vm => vm.TriggeringTheTimer)
                 .Do(trigger => {
-                    IsTimerRunning = trigger == TimerTrigger.Start;
-                    Remaining = IsTimerRunning ? 80 : 0;
-                    System.Console.WriteLine($"[tt {GetThreadId()}] running={IsTimerRunning}");
-                    cancel.OnNext(Unit.Default);
-                    cmd.Execute().Subscribe();
+                    if (trigger == TimerTrigger.Start) {
+                        startTimerCommand.Execute().Subscribe();
+                        IsTimerRunning = true;
+                    }
+                    else {
+                        IsTimerRunning = false;
+                    }                    
                 })
                 .Subscribe();
         }
-
-
-        [Reactive]
-        public double Remaining { get; private set; }
 
         [Reactive]
         public string BuddyName { get; private set; }
 
         [Reactive]
-        public bool IsFetching { get; private set; }
+        public bool IsTimerRunning { get; private set; }
 
         [Reactive]
-        public bool IsTimerRunning { get; private set; }
+        private bool IsFetching { get; set; }
 
         public ReactiveCommand<Unit, Unit> StalkCommand { get; }
         public ReactiveCommand<Unit, Unit> ContinueCommand { get; }
@@ -156,7 +111,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         private string _userAvatarUrl;
 
         private async Task Stalk() {
-            _triggeringTimer.OnNext(TimerTrigger.Stop);
+            _triggeringTheTimer.OnNext(TimerTrigger.Stop);
             
             IsFetching = true;
             // TODO: check if url is valid
@@ -171,8 +126,8 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         public enum TimerTrigger { Start, Stop };
 
         //https://rehansaeed.com/reactive-extensions-part1-replacing-events/
-        private readonly Subject<TimerTrigger> _triggeringTimer = new Subject<TimerTrigger>();
-        public IObservable<TimerTrigger> TriggeringTimer => _triggeringTimer.AsObservable();
+        private readonly Subject<TimerTrigger> _triggeringTheTimer = new Subject<TimerTrigger>();
+        private IObservable<TimerTrigger> TriggeringTheTimer => _triggeringTheTimer.AsObservable();
 
         private readonly Random _randomizer = new Random();
         private async Task Continue() {
@@ -193,11 +148,11 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             System.Console.WriteLine($"[{GetThreadId()}] user avatar url: {_userAvatarUrl}");
             IsFetching = false;
 
-            _triggeringTimer.OnNext(TimerTrigger.Start);
+            _triggeringTheTimer.OnNext(TimerTrigger.Start);
         }
     }
 
-    // https://reqres.in/api/users/1
+    // User .json example: https://reqres.in/api/users/1
     // https://stackoverflow.com/questions/725348/plain-old-clr-object-vs-data-transfer-object
     public class UserDto {
         public class DataDto {
@@ -216,5 +171,4 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         [JsonProperty("data")]
         public UserDto.DataDto Data {get; set;}
     }
-
 }

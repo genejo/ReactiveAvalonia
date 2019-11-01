@@ -41,13 +41,6 @@
                 Margin="8, 16, 16, 16"
                 Content="Continue" />
         </Grid>
-        <Button 
-            Name="btnExtra"
-            DockPanel.Dock="Bottom"
-            Height="64"
-            FontSize="20"
-            Margin="3"
-            Content="extra" />
         <TextBlock
             Name="tblDecisionTimeLeft"
             DockPanel.Dock="Bottom"

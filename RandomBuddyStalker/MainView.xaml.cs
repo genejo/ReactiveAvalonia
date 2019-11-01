@@ -6,7 +6,6 @@ using System;
 using System.Reactive.Disposables;
 using System.Threading;
 using System.Reactive.Linq;
-using System.Reactive;
 
 namespace ReactiveAvalonia.RandomBuddyStalker {
     public class MainView : ReactiveWindow<MainViewModel> {
@@ -22,29 +21,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             "View activated" + '\n');
 
                         this
-                            .OneWayBind(_vm, vm => vm.Remaining, v => v.tblDecisionTimeLeft.Text)
-                            .DisposeWith(disposables);
-
-                        this
                             .OneWayBind(_vm, vm => vm.BuddyName, v => v.tblBuddyName.Text)
-                            .DisposeWith(disposables);
-
-                        this
-                            .WhenAnyValue(v => v._vm.Remaining)
-                            .Subscribe(
-                                remaining => { 
-                                    pbLeftRemainingTime.Value = remaining; 
-                                    pbRightRemainingTime.Value = remaining; 
-                                })
-                            .DisposeWith(disposables);
-
-                        this
-                            .WhenAnyValue(v => v._vm.IsTimerRunning)
-                            .Do(running => {
-                                btnStalk.IsEnabled = running;
-                                btnContinue.IsEnabled = !running;
-                            })
-                            .Subscribe()
                             .DisposeWith(disposables);
 
                         this
@@ -53,6 +30,21 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                         
                         this
                             .BindCommand(_vm, vm => vm.ContinueCommand, v => v.btnContinue)
+                            .DisposeWith(disposables);
+
+                        this
+                            .WhenAnyValue(v => v._vm.IsTimerRunning)
+                            .Do(running => {
+                                btnStalk.IsEnabled = running;
+                                btnContinue.IsEnabled = !running;
+
+                                if (!running) {
+                                    Console.WriteLine(
+                                        $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
+                                        "Timer stopped");
+                                }
+                            })
+                            .Subscribe()
                             .DisposeWith(disposables);
 
                         Disposable
