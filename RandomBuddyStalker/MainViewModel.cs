@@ -50,18 +50,13 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             Activator = new ViewModelActivator();
             this.WhenActivated(
                 disposables => {
-                    //var timeKeeper = RunTimeKeeperAsync();
-                    Console.WriteLine($"[vm {GetThreadId()}]: ViewModel activated");
+                    Console.WriteLine($"[vm {GetThreadId()}]: ViewModel activated" + '\n');
 
                     Disposable
                         .Create(
                             () => {
-                                //_frenzyOn = false;
-                                // TODO: see if I can use a timeout?
-                                //timeKeeper.Wait();
                                 Console.WriteLine(
-                                    $"[vm {GetThreadId()}]: " +
-                                    "ViewModel deactivated");
+                                    $"[vm {GetThreadId()}]: ViewModel deactivated" + '\n');
                             })
                         .DisposeWith(disposables);
                     

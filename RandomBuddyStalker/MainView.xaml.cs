@@ -19,7 +19,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                     disposables => {
                         Console.WriteLine(
                             $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
-                            "View activated");
+                            "View activated" + '\n');
 
                         this
                             .OneWayBind(_vm, vm => vm.Remaining, v => v.tblDecisionTimeLeft.Text)
@@ -75,7 +75,6 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                                 })
                             .DisposeWith(disposables);
                     });
-
             InitializeComponent();
         }
 
