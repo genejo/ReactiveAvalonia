@@ -7,10 +7,10 @@
     Title="RandomBuddyStalker"
     Name="wndMain"
     WindowStartupLocation="CenterOwner"
-    Width="220"
-    Height="360"
-    MinWidth="220"
-    MinHeight="360"
+    Width="256"
+    Height="300"
+    MinWidth="256"
+    MinHeight="300"
     VerticalAlignment="Center"
     HorizontalAlignment="Center">
 
@@ -23,6 +23,10 @@
             FontSize="24"
             Margin="16, 16, 16, 16"
             Text="Buddy name" />
+        <ProgressBar
+            Name="pbRemainingTime"
+            DockPanel.Dock="Bottom"
+            Orientation="Horizontal" />
         <Grid DockPanel.Dock="Bottom">
             <Button 
                 Name="btnStalk"
@@ -39,11 +43,10 @@
                 Margin="16"
                 Content="Continue" />
         </Grid>
-        <DockPanel
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center">
+        <DockPanel>
             <Border
                 Name="brdAvatar"
+                DockPanel.Dock="Top"
                 Background="LightGray"
                 BorderBrush="Black"
                 BorderThickness="1"
@@ -52,10 +55,6 @@
                 Height="128">
                 <Image Name="imgAvatar" />
             </Border>
-            <ProgressBar
-                Name="pbRemainingTime"
-                Width="128"
-                Orientation="Vertical" />
         </DockPanel>
     </DockPanel>
 </Window>

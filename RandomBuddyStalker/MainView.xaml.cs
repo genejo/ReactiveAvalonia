@@ -14,23 +14,9 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         public MainView() {
             ViewModel = _vm = new MainViewModel();
 
-            //var startAnimationCommand = ReactiveCommand.CreateFromObservable(
-            //        () =>
-            //            Observable
-            //                .Interval(TimeSpan.FromMilliseconds(200))
-            //                .TakeUntil(
-            //                    _vm
-            //                        .TriggeringTheTimer
-            //                        .Where(trigger => trigger == MainViewModel.TimerTrigger.Stop))
-            //                );
-
             this
                 .WhenActivated(
                     disposables => {
-                        Console.WriteLine(
-                            $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
-                            "View activated" + '\n');
-
                         this
                             .OneWayBind(_vm, vm => vm.BuddyName, v => v.tblBuddyName.Text)
                             .DisposeWith(disposables);
@@ -51,31 +37,30 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .WhenAnyValue(v => v._vm.IsTimerRunning)
                             .Do(running => {
                                 btnStalk.IsVisible = running;
-                                btnContinue.IsVisible = !running;
-
-                                pbRemainingTime.IsVisible = running;
-                                
+                                btnContinue.IsVisible = !running;                                
                                 brdAvatar.IsVisible = !running;
+                                if (!running)
+                                    pbRemainingTime.Value = 0;
                             })
                             .Subscribe()
                             .DisposeWith(disposables);
 
+                        // TODO: explain that as animations aren't properly implemented yet
+                        // I do some myself
                         this
                             .WhenAnyObservable(v => v._vm.TriggeringTheTimer)
                             .Where(trigger => trigger == MainViewModel.TimerTrigger.Start)
                             .Do(trigger => {
-                                const int divisionsCount = 100;
+                                const int divisionsCount = 20;
                                 int divisionSpan = MainViewModel.DecisionTimeMilliseconds / divisionsCount;
                                 Observable
                                     .Timer(
                                         TimeSpan.FromMilliseconds(0),
                                         TimeSpan.FromMilliseconds(divisionSpan),
                                         RxApp.MainThreadScheduler)
-                                    .TakeWhile(item => item < divisionsCount && _vm.IsTimerRunning)
+                                    .TakeWhile(item => item <= divisionsCount && _vm.IsTimerRunning)
                                     .Subscribe(divisionsSoFar => {
-                                        int remainingTime =
-                                                MainViewModel.DecisionTimeMilliseconds -
-                                                divisionSpan * (int)divisionsSoFar;
+                                        int remainingTime = divisionSpan * (int)divisionsSoFar;
 
                                         pbRemainingTime.Value = remainingTime;
                                     });
@@ -83,6 +68,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .Subscribe()
                             .DisposeWith(disposables);
 
+                        // TODO: move this to Hello World application
                         // https://reactiveui.net/docs/handbook/events/#how-do-i-convert-my-own-c-events-into-observables
                         Observable
                             .FromEventPattern(wndMain, nameof(wndMain.Closing))
@@ -93,14 +79,6 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                                         "Main window closing...");
                                 })
                             .DisposeWith(disposables);
-
-                        Disposable
-                            .Create(
-                                () =>
-                                    Console.WriteLine(
-                                        $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
-                                        "View deactivated"))
-                            .DisposeWith(disposables);
                     });
 
             InitializeComponent();
@@ -110,7 +88,6 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             AvaloniaXamlLoader.Load(this);
 
             pbRemainingTime.Maximum = MainViewModel.DecisionTimeMilliseconds;
-            pbRemainingTime.Height = 200;
         }
 
         private Window wndMain => this.FindControl<Window>("wndMain");

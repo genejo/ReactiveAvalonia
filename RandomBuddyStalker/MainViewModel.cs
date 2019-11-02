@@ -4,10 +4,6 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using Flurl;
 using Flurl.Http;
-using System.Threading;
-using System.Reactive.Disposables;
-using System.Reactive.Concurrency;
-using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Reactive;
 using System.Reactive.Subjects;
@@ -19,31 +15,11 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
     // This guy shows quite a bit
     // [Archive](https://www.nequalsonelifestyle.com/archive/#2019)
 
-    public class MainViewModel : ReactiveObject, IActivatableViewModel {
-        public ViewModelActivator Activator { get; }
-
-        private int GetThreadId() {
-            return Thread.CurrentThread.ManagedThreadId;
-        }
-
+    public class MainViewModel : ReactiveObject {
         public readonly static int DecisionTimeMilliseconds = 2000;
 
         public MainViewModel() {
             IsTimerRunning = false;
-
-            Activator = new ViewModelActivator();
-            this.WhenActivated(
-                disposables => {
-                    Console.WriteLine($"[vm {GetThreadId()}]: ViewModel activated" + '\n');
-
-                    Disposable
-                        .Create(
-                            () => {
-                                Console.WriteLine(
-                                    $"[vm {GetThreadId()}]: ViewModel deactivated" + '\n');
-                            })
-                        .DisposeWith(disposables);                    
-                });
 
             var canInitiateNewFetch =
                 this.WhenAnyValue(vm => vm.Fetching, fetching => !fetching);
@@ -65,8 +41,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                     RxApp.MainThreadScheduler
                 );
 
-            // Run the "Continue" command once in the beginning in order to
-            // fetch the first buddy.
+            // Run the "Continue" command once in the beginning in order to fetch the first buddy.
             // https://reactiveui.net/docs/handbook/when-activated/#no-need
             ContinueCommand.Execute().Subscribe();
 
@@ -80,8 +55,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                                 TriggeringTheTimer
                                     .Where(trigger => trigger == TimerTrigger.Stop)));
 
-            startTimerCommand.Subscribe(_ => 
-                ContinueCommand.Execute().Subscribe());
+            startTimerCommand.Subscribe(_ => ContinueCommand.Execute().Subscribe());
 
             this
                 .WhenAnyObservable(vm => vm.TriggeringTheTimer)
@@ -97,6 +71,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                 .Subscribe();
         }
 
+        // TODO: reference ReactiveUI.Fody.Helpers
         [Reactive]
         public string BuddyName { get; private set; }
 
@@ -114,41 +89,36 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
         private string _userAvatarUrl;
 
-        private async Task Stalk() {
-            _triggeringTheTimer.OnNext(TimerTrigger.Stop);
-            
-            Fetching = true;
-            // TODO: check if url is valid
-            Console.WriteLine($"[{GetThreadId()}]...fetching avatar");
-            byte[] bytes = await _userAvatarUrl.GetBytesAsync();
-
-            Stream stream = new MemoryStream(bytes);
-            //BuddyAvatar?.Dispose();
-            BuddyAvatar = new Bitmap(stream);
-
-
-            // TODO: set bytes to reactive Image
-            Console.WriteLine($"[{GetThreadId()}]...fetched {bytes.Length} bytes");
-            Fetching = false;
-        }
-
         public enum TimerTrigger { Start, Stop };
 
         //https://rehansaeed.com/reactive-extensions-part1-replacing-events/
         private readonly Subject<TimerTrigger> _triggeringTheTimer = new Subject<TimerTrigger>();
         public IObservable<TimerTrigger> TriggeringTheTimer => _triggeringTheTimer.AsObservable();
 
+        private async Task Stalk() {
+            _triggeringTheTimer.OnNext(TimerTrigger.Stop);
+            
+            Fetching = true;
+            // TODO: check if url is valid
+            byte[] bytes = await _userAvatarUrl.GetBytesAsync();
+
+            // TODO: check if this is needed
+            BuddyAvatar?.Dispose();
+            BuddyAvatar = new Bitmap(new MemoryStream(bytes));
+
+            // TODO: set bytes to reactive Image
+            Fetching = false;
+        }
 
         private readonly Random _randomizer = new Random();
         private async Task Continue() {
             Fetching = true;
             BuddyAvatar = null;
             int userId = _randomizer.Next() % 12 + 1;
-            Console.WriteLine($"[{GetThreadId()}]...fetching data for random user {userId}");
             var userDtoFetcherTask =
-                "https://reqres.in/api/"
-                    .AppendPathSegments("users", userId)
-                    .GetJsonAsync<UserDto>();
+                    "https://reqres.in/api/"
+                        .AppendPathSegments("users", userId)
+                        .GetJsonAsync<UserDto>();
 
             // https://stackoverflow.com/questions/14455293/how-and-when-to-use-async-and-await
             // https://medium.com/rubrikkgroup/understanding-async-avoiding-deadlocks-e41f8f2c6f5d
@@ -156,7 +126,6 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
             _userAvatarUrl = user.Data.AvatarUrl;
             BuddyName = $"{user.Data.FirstName} {user.Data.LastName}";
-            Console.WriteLine($"[{GetThreadId()}] user avatar url: {_userAvatarUrl}");
             Fetching = false;
 
             _triggeringTheTimer.OnNext(TimerTrigger.Start);
