@@ -55,7 +55,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
                                 pbRemainingTime.IsVisible = running;
                                 
-                                //brdAvatar.IsVisible = !running;
+                                brdAvatar.IsVisible = !running;
                             })
                             .Subscribe()
                             .DisposeWith(disposables);
@@ -64,7 +64,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .WhenAnyObservable(v => v._vm.TriggeringTheTimer)
                             .Where(trigger => trigger == MainViewModel.TimerTrigger.Start)
                             .Do(trigger => {
-                                const int divisionsCount = 40;
+                                const int divisionsCount = 100;
                                 int divisionSpan = MainViewModel.DecisionTimeMilliseconds / divisionsCount;
                                 Observable
                                     .Timer(
@@ -110,6 +110,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             AvaloniaXamlLoader.Load(this);
 
             pbRemainingTime.Maximum = MainViewModel.DecisionTimeMilliseconds;
+            pbRemainingTime.Height = 200;
         }
 
         private Window wndMain => this.FindControl<Window>("wndMain");
