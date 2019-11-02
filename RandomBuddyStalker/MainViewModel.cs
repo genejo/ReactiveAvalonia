@@ -11,6 +11,8 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Reactive;
 using System.Reactive.Subjects;
+using System.IO;
+using Avalonia.Media.Imaging;
 
 namespace ReactiveAvalonia.RandomBuddyStalker {
 
@@ -24,8 +26,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             return Thread.CurrentThread.ManagedThreadId;
         }
 
-        public readonly static int DecisionTimeSeconds = 2;
-
+        public readonly static int DecisionTimeMilliseconds = 2000;
 
         public MainViewModel() {
             IsTimerRunning = false;
@@ -45,7 +46,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                 });
 
             var canInitiateNewFetch =
-                this.WhenAnyValue(vm => vm.IsFetching, fetching => !fetching);
+                this.WhenAnyValue(vm => vm.Fetching, fetching => !fetching);
 
             // https://reactiveui.net/docs/handbook/scheduling/
             // https://blog.jonstodle.com/task-toobservable-observable-fromasync-task/
@@ -74,9 +75,9 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                     () =>
                         Observable
                             .Return(Unit.Default)
-                            .Delay(TimeSpan.FromSeconds(DecisionTimeSeconds))
+                            .Delay(TimeSpan.FromMilliseconds(DecisionTimeMilliseconds))
                             .TakeUntil(
-                                _triggeringTheTimer
+                                TriggeringTheTimer
                                     .Where(trigger => trigger == TimerTrigger.Stop)));
 
             startTimerCommand.Subscribe(_ => 
@@ -100,10 +101,13 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         public string BuddyName { get; private set; }
 
         [Reactive]
+        public Bitmap BuddyAvatar { get; private set; }
+
+        [Reactive]
         public bool IsTimerRunning { get; private set; }
 
         [Reactive]
-        private bool IsFetching { get; set; }
+        private bool Fetching { get; set; }
 
         public ReactiveCommand<Unit, Unit> StalkCommand { get; }
         public ReactiveCommand<Unit, Unit> ContinueCommand { get; }
@@ -113,27 +117,34 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         private async Task Stalk() {
             _triggeringTheTimer.OnNext(TimerTrigger.Stop);
             
-            IsFetching = true;
+            Fetching = true;
             // TODO: check if url is valid
-            System.Console.WriteLine($"[{GetThreadId()}]...fetching avatar");
+            Console.WriteLine($"[{GetThreadId()}]...fetching avatar");
             byte[] bytes = await _userAvatarUrl.GetBytesAsync();
 
+            Stream stream = new MemoryStream(bytes);
+            //BuddyAvatar?.Dispose();
+            BuddyAvatar = new Bitmap(stream);
+
+
             // TODO: set bytes to reactive Image
-            System.Console.WriteLine($"[{GetThreadId()}]...fetched {bytes.Length} bytes");
-            IsFetching = false;
+            Console.WriteLine($"[{GetThreadId()}]...fetched {bytes.Length} bytes");
+            Fetching = false;
         }
 
         public enum TimerTrigger { Start, Stop };
 
         //https://rehansaeed.com/reactive-extensions-part1-replacing-events/
         private readonly Subject<TimerTrigger> _triggeringTheTimer = new Subject<TimerTrigger>();
-        private IObservable<TimerTrigger> TriggeringTheTimer => _triggeringTheTimer.AsObservable();
+        public IObservable<TimerTrigger> TriggeringTheTimer => _triggeringTheTimer.AsObservable();
+
 
         private readonly Random _randomizer = new Random();
         private async Task Continue() {
-            IsFetching = true;
+            Fetching = true;
+            BuddyAvatar = null;
             int userId = _randomizer.Next() % 12 + 1;
-            System.Console.WriteLine($"[{GetThreadId()}]...fetching data for random user {userId}");
+            Console.WriteLine($"[{GetThreadId()}]...fetching data for random user {userId}");
             var userDtoFetcherTask =
                 "https://reqres.in/api/"
                     .AppendPathSegments("users", userId)
@@ -145,30 +156,10 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
             _userAvatarUrl = user.Data.AvatarUrl;
             BuddyName = $"{user.Data.FirstName} {user.Data.LastName}";
-            System.Console.WriteLine($"[{GetThreadId()}] user avatar url: {_userAvatarUrl}");
-            IsFetching = false;
+            Console.WriteLine($"[{GetThreadId()}] user avatar url: {_userAvatarUrl}");
+            Fetching = false;
 
             _triggeringTheTimer.OnNext(TimerTrigger.Start);
         }
-    }
-
-    // User .json example: https://reqres.in/api/users/1
-    // https://stackoverflow.com/questions/725348/plain-old-clr-object-vs-data-transfer-object
-    public class UserDto {
-        public class DataDto {
-            [JsonProperty("id")]
-            public int Id {get; set; }
-            [JsonProperty("email")]
-            public string Email {get; set;}
-            [JsonProperty("first_name")]
-            public string FirstName {get; set;}
-            [JsonProperty("last_name")]
-            public string LastName {get; set;}
-            [JsonProperty("avatar")]
-            public string AvatarUrl {get; set; }
-        }
-
-        [JsonProperty("data")]
-        public UserDto.DataDto Data {get; set;}
     }
 }

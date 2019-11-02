@@ -7,9 +7,9 @@
     Title="RandomBuddyStalker"
     Name="wndMain"
     WindowStartupLocation="CenterOwner"
-    Width="320"
-    Height="420"
-    MinWidth="320"
+    Width="256"
+    Height="320"
+    MinWidth="256"
     MinHeight="320"
     VerticalAlignment="Center"
     HorizontalAlignment="Center">
@@ -23,50 +23,34 @@
             FontSize="24"
             Margin="16, 16, 16, 0"
             Text="Buddy name" />
-        <Grid
-            ColumnDefinitions="*,*"
-            DockPanel.Dock="Bottom">
+        <Grid DockPanel.Dock="Bottom">
             <Button 
                 Name="btnStalk"
-                Grid.Column="0"
+                Width="192"
                 Height="64"
                 FontSize="20"
-                Margin="16, 16, 8, 16"
+                Margin="16"
                 Content="Stalk Buddy" />
             <Button 
                 Name="btnContinue"
-                Grid.Column="1"
+                Width="192"
                 Height="64"
                 FontSize="20"
-                Margin="8, 16, 16, 16"
+                Margin="16"
                 Content="Continue" />
         </Grid>
-        <TextBlock
-            Name="tblDecisionTimeLeft"
-            DockPanel.Dock="Bottom"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            Margin="16, 0"
-            FontSize="16" Text="New buddy in X seconds" />
-        <ProgressBar
-            Name="pbLeftRemainingTime"
-            DockPanel.Dock="Left"
-            Minimum="0" Maximum="100" Value="50"
-            Orientation="Vertical" />
-        <ProgressBar
-            Name="pbRightRemainingTime"
-            DockPanel.Dock="Right"
-            Minimum="0" Maximum="100" Value="50"
-            Orientation="Vertical" />
-        <Border
-            Background="LightGray"
-            BorderBrush="Black"
-            BorderThickness="1"
-            Margin="16"
-            CornerRadius="8"
-            Width="128"
-            Height="128">
-            <Image Name="imgAvatar" Width="250" Height="250" />
-        </Border>
+            <Grid Width="128" Height="128">
+            <Border
+                Name="brdAvatar"
+                Background="LightGray"
+                BorderBrush="Black"
+                BorderThickness="1"
+                Margin="16"
+                Width="128"
+                Height="128">
+                <Image Name="imgAvatar" />
+            </Border>
+            <ProgressBar  Name="pbRemainingTime" Orientation="Vertical" />
+        </Grid>
     </DockPanel>
 </Window>

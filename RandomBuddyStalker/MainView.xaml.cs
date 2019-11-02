@@ -14,6 +14,16 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         public MainView() {
             ViewModel = _vm = new MainViewModel();
 
+            //var startAnimationCommand = ReactiveCommand.CreateFromObservable(
+            //        () =>
+            //            Observable
+            //                .Interval(TimeSpan.FromMilliseconds(200))
+            //                .TakeUntil(
+            //                    _vm
+            //                        .TriggeringTheTimer
+            //                        .Where(trigger => trigger == MainViewModel.TimerTrigger.Stop))
+            //                );
+
             this
                 .WhenActivated(
                     disposables => {
@@ -23,6 +33,10 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
                         this
                             .OneWayBind(_vm, vm => vm.BuddyName, v => v.tblBuddyName.Text)
+                            .DisposeWith(disposables);
+
+                        this
+                            .OneWayBind(_vm, vm => vm.BuddyAvatar, v => v.imgAvatar.Source)
                             .DisposeWith(disposables);
 
                         this
@@ -36,24 +50,37 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                         this
                             .WhenAnyValue(v => v._vm.IsTimerRunning)
                             .Do(running => {
-                                btnStalk.IsEnabled = running;
-                                btnContinue.IsEnabled = !running;
+                                btnStalk.IsVisible = running;
+                                btnContinue.IsVisible = !running;
 
-                                if (!running) {
-                                    Console.WriteLine(
-                                        $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
-                                        "Timer stopped");
-                                }
+                                pbRemainingTime.IsVisible = running;
+                                
+                                //brdAvatar.IsVisible = !running;
                             })
                             .Subscribe()
                             .DisposeWith(disposables);
 
-                        Disposable
-                            .Create(
-                                () => 
-                                    Console.WriteLine(
-                                        $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
-                                        "View deactivated"))
+                        this
+                            .WhenAnyObservable(v => v._vm.TriggeringTheTimer)
+                            .Where(trigger => trigger == MainViewModel.TimerTrigger.Start)
+                            .Do(trigger => {
+                                const int divisionsCount = 40;
+                                int divisionSpan = MainViewModel.DecisionTimeMilliseconds / divisionsCount;
+                                Observable
+                                    .Timer(
+                                        TimeSpan.FromMilliseconds(0),
+                                        TimeSpan.FromMilliseconds(divisionSpan),
+                                        RxApp.MainThreadScheduler)
+                                    .TakeWhile(item => item < divisionsCount && _vm.IsTimerRunning)
+                                    .Subscribe(divisionsSoFar => {
+                                        int remainingTime =
+                                                MainViewModel.DecisionTimeMilliseconds -
+                                                divisionSpan * (int)divisionsSoFar;
+
+                                        pbRemainingTime.Value = remainingTime;
+                                    });
+                            })
+                            .Subscribe()
                             .DisposeWith(disposables);
 
                         // https://reactiveui.net/docs/handbook/events/#how-do-i-convert-my-own-c-events-into-observables
@@ -66,22 +93,31 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                                         "Main window closing...");
                                 })
                             .DisposeWith(disposables);
+
+                        Disposable
+                            .Create(
+                                () =>
+                                    Console.WriteLine(
+                                        $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
+                                        "View deactivated"))
+                            .DisposeWith(disposables);
                     });
+
             InitializeComponent();
-            //imgAvatar.Source = new Bitmap("[path to image]/128.jpg");
         }
 
         private void InitializeComponent() {
             AvaloniaXamlLoader.Load(this);
+
+            pbRemainingTime.Maximum = MainViewModel.DecisionTimeMilliseconds;
         }
 
         private Window wndMain => this.FindControl<Window>("wndMain");
         private TextBlock tblBuddyName => this.FindControl<TextBlock>("tblBuddyName");
-        private TextBlock tblDecisionTimeLeft => this.FindControl<TextBlock>("tblDecisionTimeLeft");
         private Button btnStalk => this.FindControl<Button>("btnStalk");
         private Button btnContinue => this.FindControl<Button>("btnContinue");
-        private ProgressBar pbLeftRemainingTime => this.FindControl<ProgressBar>("pbLeftRemainingTime");
-        private ProgressBar pbRightRemainingTime => this.FindControl<ProgressBar>("pbRightRemainingTime");
+        private ProgressBar pbRemainingTime => this.FindControl<ProgressBar>("pbRemainingTime");
+        private Border brdAvatar => this.FindControl<Border>("brdAvatar");
         private Image imgAvatar => this.FindControl<Image>("imgAvatar");
     }
 }
