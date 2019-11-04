@@ -51,7 +51,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .WhenAnyObservable(v => v._vm.TriggeringTheTimer)
                             .Where(trigger => trigger == MainViewModel.TimerTrigger.Start)
                             .Do(trigger => {
-                                const int divisionsCount = 20;
+                                const int divisionsCount = 10;
                                 int divisionSpan = MainViewModel.DecisionTimeMilliseconds / divisionsCount;
                                 Observable
                                     .Timer(

@@ -9,6 +9,7 @@ using System.Reactive;
 using System.Reactive.Subjects;
 using System.IO;
 using Avalonia.Media.Imaging;
+using System.Threading;
 
 namespace ReactiveAvalonia.RandomBuddyStalker {
 
@@ -91,41 +92,52 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
         public enum TimerTrigger { Start, Stop };
 
-        //https://rehansaeed.com/reactive-extensions-part1-replacing-events/
+        // https://rehansaeed.com/reactive-extensions-part1-replacing-events/
         private readonly Subject<TimerTrigger> _triggeringTheTimer = new Subject<TimerTrigger>();
         public IObservable<TimerTrigger> TriggeringTheTimer => _triggeringTheTimer.AsObservable();
+
+        // https://rehansaeed.com/reactive-extensions-rx-part-8-timeouts/
+        CancellationTokenSource _timeoutTokenSource =
+            new CancellationTokenSource(TimeSpan.FromMilliseconds(2000));
 
         private async Task Stalk() {
             _triggeringTheTimer.OnNext(TimerTrigger.Stop);
             
             Fetching = true;
-            // TODO: check if url is valid
-            byte[] bytes = await _userAvatarUrl.GetBytesAsync();
+            try {
+                // https://stackoverflow.com/questions/14455293/how-and-when-to-use-async-and-await
+                // https://medium.com/rubrikkgroup/understanding-async-avoiding-deadlocks-e41f8f2c6f5d
+                byte[] bytes = await _userAvatarUrl.GetBytesAsync(_timeoutTokenSource.Token);
 
-            // TODO: check if this is needed
-            BuddyAvatar?.Dispose();
-            BuddyAvatar = new Bitmap(new MemoryStream(bytes));
+                BuddyAvatar = new Bitmap(new MemoryStream(bytes));
+            }
+            catch {
+                Console.WriteLine("Could not fetch avatar");
+            }
 
-            // TODO: set bytes to reactive Image
             Fetching = false;
         }
 
         private readonly Random _randomizer = new Random();
         private async Task Continue() {
             Fetching = true;
-            BuddyAvatar = null;
             int userId = _randomizer.Next() % 12 + 1;
+            BuddyAvatar?.Dispose();
+            BuddyAvatar = null;
+
             var userDtoFetcherTask =
                     "https://reqres.in/api/"
                         .AppendPathSegments("users", userId)
-                        .GetJsonAsync<UserDto>();
-
-            // https://stackoverflow.com/questions/14455293/how-and-when-to-use-async-and-await
-            // https://medium.com/rubrikkgroup/understanding-async-avoiding-deadlocks-e41f8f2c6f5d
-            var user = await userDtoFetcherTask;
-
-            _userAvatarUrl = user.Data.AvatarUrl;
-            BuddyName = $"{user.Data.FirstName} {user.Data.LastName}";
+                        .GetJsonAsync<UserDto>(_timeoutTokenSource.Token);
+            try {
+                var user = await userDtoFetcherTask;
+                _userAvatarUrl = user.Data.AvatarUrl;
+                // https://stackoverflow.com/a/5838632/12207453
+                BuddyName = $"{user.Data.FirstName} {user.Data.LastName}";
+            }
+            catch {
+                Console.WriteLine("Could not fetch buddy info");
+            }
             Fetching = false;
 
             _triggeringTheTimer.OnNext(TimerTrigger.Start);
