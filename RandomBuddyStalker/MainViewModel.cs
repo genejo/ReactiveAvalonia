@@ -27,9 +27,10 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         // https://rehansaeed.com/reactive-extensions-part1-replacing-events/
         private readonly Subject<TimerTrigger> _triggeringTheTimer = new Subject<TimerTrigger>();
 
-
         public MainViewModel() {
             Activator = new ViewModelActivator();
+
+            IsTimerRunning = false;
 
             this.WhenActivated(
                 disposables => {
@@ -38,11 +39,10 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                         .DisposeWith(disposables);
                 });
 
-            IsTimerRunning = false;
-
             var canInitiateNewFetch =
                 this.WhenAnyValue(vm => vm.Fetching, fetching => !fetching);
 
+            // https://reactiveui.net/docs/handbook/commands/
             // https://reactiveui.net/docs/handbook/scheduling/
             // https://blog.jonstodle.com/task-toobservable-observable-fromasync-task/
             // https://github.com/reactiveui/ReactiveUI/issues/1245
@@ -100,13 +100,13 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
         [Reactive] private bool Fetching { get; set; }
 
+        // https://reactiveui.net/docs/handbook/commands/
         public ReactiveCommand<Unit, Unit> StalkCommand { get; }
 
         public ReactiveCommand<Unit, Unit> ContinueCommand { get; }
 
+        // https://rehansaeed.com/reactive-extensions-part1-replacing-events/
         public IObservable<TimerTrigger> TriggeringTheTimer => _triggeringTheTimer.AsObservable();
-
-
 
         // https://stackoverflow.com/questions/14455293/how-and-when-to-use-async-and-await
         // https://medium.com/rubrikkgroup/understanding-async-avoiding-deadlocks-e41f8f2c6f5d
@@ -115,15 +115,15 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             
             Fetching = true;
 
-            try {
-                // https://rehansaeed.com/reactive-extensions-rx-part-8-timeouts/
-                using (var timeoutTokenSource = new CancellationTokenSource(_fetchTimeoutSpan)) {
+            // https://rehansaeed.com/reactive-extensions-rx-part-8-timeouts/
+            using (var timeoutTokenSource = new CancellationTokenSource(_fetchTimeoutSpan)) {
+                try {
                     byte[] bytes = await _userAvatarUrl.GetBytesAsync(timeoutTokenSource.Token);
                     BuddyAvatarBitmap = new Bitmap(new MemoryStream(bytes));
                 }
-            }
-            catch {
-                Console.WriteLine("Could not fetch avatar");
+                catch {
+                    Console.WriteLine("Could not fetch avatar");
+                }
             }
 
             Fetching = false;
@@ -133,10 +133,13 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         private async Task Continue() {
             Fetching = true;
 
+            // At the time of writing the sample service provided by reqres.in
+            // exposes 12 users with id's in [1...12]
             int userId = _randomizer.Next() % 12 + 1;
             BuddyAvatarBitmap?.Dispose();
             BuddyAvatarBitmap = null;
 
+            // https://rehansaeed.com/reactive-extensions-rx-part-8-timeouts/
             using (var timeoutTokenSource = new CancellationTokenSource(_fetchTimeoutSpan)) {
                 var userDtoFetcherTask =
                         "https://reqres.in/api/"

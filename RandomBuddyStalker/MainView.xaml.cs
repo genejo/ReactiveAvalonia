@@ -17,6 +17,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             this
                 .WhenActivated(
                     disposables => {
+                        // https://reactiveui.net/docs/handbook/data-binding/
                         this
                             .OneWayBind(_vm, vm => vm.BuddyName, v => v.tblBuddyName.Text)
                             .DisposeWith(disposables);
@@ -25,6 +26,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .OneWayBind(_vm, vm => vm.BuddyAvatarBitmap, v => v.imgAvatar.Source)
                             .DisposeWith(disposables);
 
+                        // https://reactiveui.net/docs/handbook/commands/binding-commands
                         this
                             .BindCommand(_vm, vm => vm.StalkCommand, v => v.btnStalk)
                             .DisposeWith(disposables);
@@ -45,14 +47,14 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .Subscribe()
                             .DisposeWith(disposables);
 
-                        // At the time of writing Avalonia control animations are not stable.
+                        // At the time of writing Avalonia UI control animations are not stable.
                         // For this reason we're manually implementing the progress bar animation.
-                        // Disclaimer: self contained animation clause to the slight detriment of efficiency.
+                        // Disclaimer: self-contained animation code snippet to the  detriment of efficiency.
                         this
                             .WhenAnyObservable(v => v._vm.TriggeringTheTimer)
                             .Where(trigger => trigger == TimerTrigger.Start)
                             .Do(trigger => {
-                                const int barDivisionsCount = 4;
+                                const int barDivisionsCount = 8;
                                 int divisionTimeSpan = MainViewModel.DecisionTimeMilliseconds / (barDivisionsCount + 1);
                                 int barDivisionLength = MainViewModel.DecisionTimeMilliseconds / barDivisionsCount;
                                 Observable
