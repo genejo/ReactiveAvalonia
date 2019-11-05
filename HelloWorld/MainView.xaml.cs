@@ -24,8 +24,8 @@ namespace ReactiveAvalonia.HelloWorld {
                     disposables => {
                         // Jut log the View's activation
                         Console.WriteLine(
-                            $"[v  { Thread.CurrentThread.ManagedThreadId}]: " +
-                            $"View activated\n");
+                            $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
+                            "View activated\n");
 
                         // Just log the View's deactivation
                         Disposable
@@ -33,7 +33,7 @@ namespace ReactiveAvalonia.HelloWorld {
                                 () =>
                                     Console.WriteLine(
                                         $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
-                                        $"View deactivated"))
+                                        "View deactivated"))
                             .DisposeWith(disposables);
 
                         // https://reactiveui.net/docs/handbook/data-binding/

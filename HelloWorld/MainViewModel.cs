@@ -33,7 +33,7 @@ namespace ReactiveAvalonia.HelloWorld {
                     // https://github.com/kentcb/YouIandReactiveUI/blob/master/ViewModels/Samples/Chapter%2018/Sample%2004/ChildViewModel.cs
                     Console.WriteLine(
                         $"[vm {Thread.CurrentThread.ManagedThreadId}]: " +
-                        $"ViewModel activated");
+                        "ViewModel activated");
 
                     // Asynchronously generate a new greeting message once every second
                     // https://reactiveui.net/docs/guidelines/framework/ui-thread-and-schedulers
@@ -66,7 +66,7 @@ namespace ReactiveAvalonia.HelloWorld {
                             () =>
                                 Console.WriteLine(
                                     $"[vm {Thread.CurrentThread.ManagedThreadId}]: " +
-                                    $"ViewModel deactivated"))
+                                    "ViewModel deactivated"))
                         .DisposeWith(disposables);
                 });
 
@@ -80,7 +80,7 @@ namespace ReactiveAvalonia.HelloWorld {
                     greeting =>
                         Console.WriteLine(
                             $"[vm {Thread.CurrentThread.ManagedThreadId}]: " +
-                            $"WhenAnyValue()   -> " +
+                            "WhenAnyValue()   -> " +
                             $"Greeting value changed to: \"{greeting}\"\n"))
                 .Subscribe();
         }
