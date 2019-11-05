@@ -4,6 +4,7 @@ using Avalonia.ReactiveUI;
 using ReactiveUI;
 using System;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Threading;
 
 namespace ReactiveAvalonia.HelloWorld {
@@ -14,6 +15,7 @@ namespace ReactiveAvalonia.HelloWorld {
 
         // https://reactiveui.net/docs/handbook/data-binding/avalonia
         private TextBlock GreetingLabel => this.FindControl<TextBlock>("GreetingLabel");
+        private Window wndMain => this.FindControl<Window>("wndMain");
 
         public MainView() {
             ViewModel = new MainViewModel();
@@ -34,6 +36,17 @@ namespace ReactiveAvalonia.HelloWorld {
                                     Console.WriteLine(
                                         $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
                                         "View deactivated"))
+                            .DisposeWith(disposables);
+
+                        // https://reactiveui.net/docs/handbook/events/#how-do-i-convert-my-own-c-events-into-observables
+                        Observable
+                            .FromEventPattern(wndMain, nameof(wndMain.Closing))
+                            .Subscribe(
+                                _ => {
+                                    Console.WriteLine(
+                                        $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
+                                        "Main window closing...");
+                                })
                             .DisposeWith(disposables);
 
                         // https://reactiveui.net/docs/handbook/data-binding/

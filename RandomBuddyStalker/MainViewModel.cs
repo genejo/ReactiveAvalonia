@@ -35,6 +35,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             this.WhenActivated(
                 disposables => {
                     Disposable
+                        // https://stackoverflow.com/a/5838632/12207453
                         .Create(() => BuddyAvatarBitmap?.Dispose())
                         .DisposeWith(disposables);
                 });
@@ -130,12 +131,15 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         }
 
         private static readonly Random _randomizer = new Random();
+        
         private async Task Continue() {
             Fetching = true;
 
             // At the time of writing the sample service provided by reqres.in
             // exposes 12 users with id's in [1...12]
             int userId = _randomizer.Next() % 12 + 1;
+
+            // https://stackoverflow.com/a/5838632/12207453
             BuddyAvatarBitmap?.Dispose();
             BuddyAvatarBitmap = null;
 
@@ -148,7 +152,6 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                 try {
                     var user = await userDtoFetcherTask;
                     _userAvatarUrl = user.Data.AvatarUrl;
-                    // https://stackoverflow.com/a/5838632/12207453
                     BuddyName = $"{user.Data.FirstName} {user.Data.LastName}";
                 }
                 catch {

@@ -70,18 +70,6 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             })
                             .Subscribe()
                             .DisposeWith(disposables);
-
-                        // TODO: move this to Hello World application
-                        // https://reactiveui.net/docs/handbook/events/#how-do-i-convert-my-own-c-events-into-observables
-                        Observable
-                            .FromEventPattern(wndMain, nameof(wndMain.Closing))
-                            .Subscribe(
-                                _ => {
-                                    Console.WriteLine(
-                                        $"[v  {Thread.CurrentThread.ManagedThreadId}]: " +
-                                        "Main window closing...");
-                                })
-                            .DisposeWith(disposables);
                     });
 
             InitializeComponent();
@@ -93,7 +81,6 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             pbRemainingTime.Maximum = MainViewModel.DecisionTimeMilliseconds;
         }
 
-        private Window wndMain => this.FindControl<Window>("wndMain");
         private TextBlock tblBuddyName => this.FindControl<TextBlock>("tblBuddyName");
         private Button btnStalk => this.FindControl<Button>("btnStalk");
         private Button btnContinue => this.FindControl<Button>("btnContinue");

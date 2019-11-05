@@ -5,7 +5,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     x:Class="ReactiveAvalonia.RandomBuddyStalker.MainView"
     Title="RandomBuddyStalker"
-    Name="wndMain"
     WindowStartupLocation="CenterOwner"
     Width="256"
     Height="300"
