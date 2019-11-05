@@ -10,16 +10,34 @@ using System.Reactive.Subjects;
 using System.IO;
 using Avalonia.Media.Imaging;
 using System.Threading;
+using System.Reactive.Disposables;
 
 namespace ReactiveAvalonia.RandomBuddyStalker {
 
     // This guy shows quite a bit
     // [Archive](https://www.nequalsonelifestyle.com/archive/#2019)
 
-    public class MainViewModel : ReactiveObject {
-        public readonly static int DecisionTimeMilliseconds = 2000;
+    public class MainViewModel : ReactiveObject, IActivatableViewModel {
+        public ViewModelActivator Activator { get; }
+
+        public const int DecisionTimeMilliseconds = 2000;
+        private static readonly TimeSpan _fetchTimeoutSpan = TimeSpan.FromMilliseconds(2000);
+        private string _userAvatarUrl;
+
+        // https://rehansaeed.com/reactive-extensions-part1-replacing-events/
+        private readonly Subject<TimerTrigger> _triggeringTheTimer = new Subject<TimerTrigger>();
+
 
         public MainViewModel() {
+            Activator = new ViewModelActivator();
+
+            this.WhenActivated(
+                disposables => {
+                    Disposable
+                        .Create(() => BuddyAvatarBitmap?.Dispose())
+                        .DisposeWith(disposables);
+                });
+
             IsTimerRunning = false;
 
             var canInitiateNewFetch =
@@ -72,44 +90,37 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                 .Subscribe();
         }
 
-        // TODO: reference ReactiveUI.Fody.Helpers
-        [Reactive]
-        public string BuddyName { get; private set; }
+        // https://github.com/kswoll/ReactiveUI.Fody
+        // https://reactiveui.net/docs/handbook/view-models/boilerplate-code#read-write-properties
+        [Reactive] public string BuddyName { get; private set; }
 
-        [Reactive]
-        public Bitmap BuddyAvatar { get; private set; }
+        [Reactive] public Bitmap BuddyAvatarBitmap { get; private set; }
 
-        [Reactive]
-        public bool IsTimerRunning { get; private set; }
+        [Reactive] public bool IsTimerRunning { get; private set; }
 
-        [Reactive]
-        private bool Fetching { get; set; }
+        [Reactive] private bool Fetching { get; set; }
 
         public ReactiveCommand<Unit, Unit> StalkCommand { get; }
+
         public ReactiveCommand<Unit, Unit> ContinueCommand { get; }
 
-        private string _userAvatarUrl;
-
-        public enum TimerTrigger { Start, Stop };
-
-        // https://rehansaeed.com/reactive-extensions-part1-replacing-events/
-        private readonly Subject<TimerTrigger> _triggeringTheTimer = new Subject<TimerTrigger>();
         public IObservable<TimerTrigger> TriggeringTheTimer => _triggeringTheTimer.AsObservable();
 
-        // https://rehansaeed.com/reactive-extensions-rx-part-8-timeouts/
-        CancellationTokenSource _timeoutTokenSource =
-            new CancellationTokenSource(TimeSpan.FromMilliseconds(2000));
 
+
+        // https://stackoverflow.com/questions/14455293/how-and-when-to-use-async-and-await
+        // https://medium.com/rubrikkgroup/understanding-async-avoiding-deadlocks-e41f8f2c6f5d
         private async Task Stalk() {
             _triggeringTheTimer.OnNext(TimerTrigger.Stop);
             
             Fetching = true;
-            try {
-                // https://stackoverflow.com/questions/14455293/how-and-when-to-use-async-and-await
-                // https://medium.com/rubrikkgroup/understanding-async-avoiding-deadlocks-e41f8f2c6f5d
-                byte[] bytes = await _userAvatarUrl.GetBytesAsync(_timeoutTokenSource.Token);
 
-                BuddyAvatar = new Bitmap(new MemoryStream(bytes));
+            try {
+                // https://rehansaeed.com/reactive-extensions-rx-part-8-timeouts/
+                using (var timeoutTokenSource = new CancellationTokenSource(_fetchTimeoutSpan)) {
+                    byte[] bytes = await _userAvatarUrl.GetBytesAsync(timeoutTokenSource.Token);
+                    BuddyAvatarBitmap = new Bitmap(new MemoryStream(bytes));
+                }
             }
             catch {
                 Console.WriteLine("Could not fetch avatar");
@@ -118,29 +129,38 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             Fetching = false;
         }
 
-        private readonly Random _randomizer = new Random();
+        private static readonly Random _randomizer = new Random();
         private async Task Continue() {
             Fetching = true;
-            int userId = _randomizer.Next() % 12 + 1;
-            BuddyAvatar?.Dispose();
-            BuddyAvatar = null;
 
-            var userDtoFetcherTask =
-                    "https://reqres.in/api/"
-                        .AppendPathSegments("users", userId)
-                        .GetJsonAsync<UserDto>(_timeoutTokenSource.Token);
-            try {
-                var user = await userDtoFetcherTask;
-                _userAvatarUrl = user.Data.AvatarUrl;
-                // https://stackoverflow.com/a/5838632/12207453
-                BuddyName = $"{user.Data.FirstName} {user.Data.LastName}";
+            int userId = _randomizer.Next() % 12 + 1;
+            BuddyAvatarBitmap?.Dispose();
+            BuddyAvatarBitmap = null;
+
+            using (var timeoutTokenSource = new CancellationTokenSource(_fetchTimeoutSpan)) {
+                var userDtoFetcherTask =
+                        "https://reqres.in/api/"
+                            .AppendPathSegments("users", userId)
+                            .GetJsonAsync<UserDto>(timeoutTokenSource.Token);
+                try {
+                    var user = await userDtoFetcherTask;
+                    _userAvatarUrl = user.Data.AvatarUrl;
+                    // https://stackoverflow.com/a/5838632/12207453
+                    BuddyName = $"{user.Data.FirstName} {user.Data.LastName}";
+                }
+                catch {
+                    Console.WriteLine("Could not fetch buddy info");
+                }
             }
-            catch {
-                Console.WriteLine("Could not fetch buddy info");
-            }
+
             Fetching = false;
 
             _triggeringTheTimer.OnNext(TimerTrigger.Start);
         }
+    }
+
+    public enum TimerTrigger { 
+        Start,
+        Stop
     }
 }

@@ -22,7 +22,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .DisposeWith(disposables);
 
                         this
-                            .OneWayBind(_vm, vm => vm.BuddyAvatar, v => v.imgAvatar.Source)
+                            .OneWayBind(_vm, vm => vm.BuddyAvatarBitmap, v => v.imgAvatar.Source)
                             .DisposeWith(disposables);
 
                         this
@@ -45,23 +45,24 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .Subscribe()
                             .DisposeWith(disposables);
 
-                        // TODO: explain that as animations aren't properly implemented yet
-                        // I do some myself
+                        // At the time of writing Avalonia control animations are not stable.
+                        // For this reason we're manually implementing the progress bar animation.
+                        // Disclaimer: self contained animation clause to the slight detriment of efficiency.
                         this
                             .WhenAnyObservable(v => v._vm.TriggeringTheTimer)
-                            .Where(trigger => trigger == MainViewModel.TimerTrigger.Start)
+                            .Where(trigger => trigger == TimerTrigger.Start)
                             .Do(trigger => {
-                                const int divisionsCount = 10;
-                                int divisionSpan = MainViewModel.DecisionTimeMilliseconds / divisionsCount;
+                                const int barDivisionsCount = 4;
+                                int divisionTimeSpan = MainViewModel.DecisionTimeMilliseconds / (barDivisionsCount + 1);
+                                int barDivisionLength = MainViewModel.DecisionTimeMilliseconds / barDivisionsCount;
                                 Observable
                                     .Timer(
                                         TimeSpan.FromMilliseconds(0),
-                                        TimeSpan.FromMilliseconds(divisionSpan),
+                                        TimeSpan.FromMilliseconds(divisionTimeSpan),
                                         RxApp.MainThreadScheduler)
-                                    .TakeWhile(item => item <= divisionsCount && _vm.IsTimerRunning)
+                                    .TakeWhile(item => item <= barDivisionsCount && _vm.IsTimerRunning)
                                     .Subscribe(divisionsSoFar => {
-                                        int remainingTime = divisionSpan * (int)divisionsSoFar;
-
+                                        int remainingTime = (int)divisionsSoFar * barDivisionLength;
                                         pbRemainingTime.Value = remainingTime;
                                     });
                             })
