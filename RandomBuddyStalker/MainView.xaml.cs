@@ -39,7 +39,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .WhenAnyValue(v => v._vm.IsTimerRunning)
                             .Do(running => {
                                 btnStalk.IsVisible = running;
-                                btnContinue.IsVisible = !running;                                
+                                btnContinue.IsVisible = !running;
                                 brdAvatar.IsVisible = !running;
                                 if (!running)
                                     pbRemainingTime.Value = 0;
@@ -49,7 +49,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
                         // At the time of writing Avalonia UI control animations are not stable.
                         // For this reason we're manually implementing the progress bar animation.
-                        // Disclaimer: self-contained animation code snippet to the  detriment of efficiency.
+                        // Disclaimer: self-contained animation code snippet to the detriment of efficiency.
                         this
                             .WhenAnyObservable(v => v._vm.TriggeringTheTimer)
                             .Where(trigger => trigger == TimerTrigger.Start)
