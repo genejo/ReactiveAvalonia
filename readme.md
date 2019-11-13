@@ -16,7 +16,7 @@ C# multiplatform GUI samples to help understanding:
 
 ### Random Buddy Stalker
 
-<img  width="150" src="https://www.dropbox.com/s/bzt56v87b6hzpai/RandomBuddyStalker_Trailer.gif?raw=1" />
+<img  width="200" src="https://www.dropbox.com/s/bzt56v87b6hzpai/RandomBuddyStalker_Trailer.gif?raw=1" />
 
 ## Aims
 
