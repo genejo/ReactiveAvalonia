@@ -13,13 +13,8 @@ using System.Threading;
 using System.Reactive.Disposables;
 
 namespace ReactiveAvalonia.RandomBuddyStalker {
-
-    // This guy shows quite a bit
-    // [Archive](https://www.nequalsonelifestyle.com/archive/#2019)
-
     public class MainViewModel : ReactiveObject, IActivatableViewModel {
         public ViewModelActivator Activator { get; }
-
         public const int DecisionTimeMilliseconds = 2000;
         private static readonly TimeSpan _fetchTimeoutSpan = TimeSpan.FromMilliseconds(2000);
         private string _userAvatarUrl;
