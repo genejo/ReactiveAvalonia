@@ -100,9 +100,11 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         private readonly Subject<TimerTrigger> _triggeringTheTimer = new Subject<TimerTrigger>();
         public IObservable<TimerTrigger> TriggeringTheTimer => _triggeringTheTimer.AsObservable();
 
-        private string _userAvatarUrl;
+        private const int TimeoutLimit = 3000;
         private static readonly TimeSpan _fetchTimeoutSpan =
-            TimeSpan.FromMilliseconds(DecisionTimeMilliseconds);
+            TimeSpan.FromMilliseconds(TimeoutLimit);
+
+        private string _userAvatarUrl;
 
         // https://stackoverflow.com/questions/14455293/how-and-when-to-use-async-and-await
         // https://medium.com/rubrikkgroup/understanding-async-avoiding-deadlocks-e41f8f2c6f5d
