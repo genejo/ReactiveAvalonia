@@ -16,11 +16,6 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
     public class MainViewModel : ReactiveObject, IActivatableViewModel {
         public ViewModelActivator Activator { get; }
         public const int DecisionTimeMilliseconds = 2000;
-        private static readonly TimeSpan _fetchTimeoutSpan = TimeSpan.FromMilliseconds(2000);
-        private string _userAvatarUrl;
-
-        // https://rehansaeed.com/reactive-extensions-part1-replacing-events/
-        private readonly Subject<TimerTrigger> _triggeringTheTimer = new Subject<TimerTrigger>();
 
         public MainViewModel() {
             Activator = new ViewModelActivator();
@@ -102,7 +97,12 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
         public ReactiveCommand<Unit, Unit> ContinueCommand { get; }
 
         // https://rehansaeed.com/reactive-extensions-part1-replacing-events/
+        private readonly Subject<TimerTrigger> _triggeringTheTimer = new Subject<TimerTrigger>();
         public IObservable<TimerTrigger> TriggeringTheTimer => _triggeringTheTimer.AsObservable();
+
+        private string _userAvatarUrl;
+        private static readonly TimeSpan _fetchTimeoutSpan =
+            TimeSpan.FromMilliseconds(DecisionTimeMilliseconds);
 
         // https://stackoverflow.com/questions/14455293/how-and-when-to-use-async-and-await
         // https://medium.com/rubrikkgroup/understanding-async-avoiding-deadlocks-e41f8f2c6f5d
