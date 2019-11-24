@@ -35,7 +35,7 @@ namespace ReactiveAvalonia.HelloWorld {
                         $"[vm {Thread.CurrentThread.ManagedThreadId}]: " +
                         "ViewModel activated");
 
-                    // Asynchronously generate a new greeting message once every second
+                    // Asynchronously generate a new greeting message every second
                     // https://reactiveui.net/docs/guidelines/framework/ui-thread-and-schedulers
                     Observable
                         .Timer(

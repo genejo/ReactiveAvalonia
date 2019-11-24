@@ -8,12 +8,12 @@
         Width="320"
         Height="200"
         MinWidth="320"
-        MinHeight="200"
-        >
+        MinHeight="200">
     <!-- http://avaloniaui.net/docs/reactiveui/activation#activation-example - View.xaml -->
     <!-- https://reactiveui.net/docs/handbook/data-binding/avalonia -->
-    <TextBlock Name="GreetingLabel"
-               VerticalAlignment="Center"
-               HorizontalAlignment="Center"
-               FontSize="16"/>
+    <TextBlock
+        Name="tbGreetingLabel"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Center"
+        FontSize="16" />
 </Window>

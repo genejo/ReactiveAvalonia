@@ -133,7 +133,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
             Fetching = true;
 
             // At the time of writing the sample service provided by reqres.in
-            // exposes 12 users with id's in [1...12]
+            // exposes 12 users with id's in [1..12]
             int userId = _randomizer.Next() % 12 + 1;
 
             // https://stackoverflow.com/a/5838632/12207453
@@ -158,6 +158,7 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
 
             Fetching = false;
 
+            // https://rehansaeed.com/reactive-extensions-part1-replacing-events/
             _triggeringTheTimer.OnNext(TimerTrigger.Start);
         }
     }

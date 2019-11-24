@@ -2,19 +2,36 @@
 
 ## Purpose
 
-C# multiplatform GUI samples to help understanding:
+Self-contained multiplatform samples to help understanding: [ReactiveX](http://reactivex.io), [ReactiveUI](https://reactiveui.net), [Avalonia UI](https://avaloniaui.net). Featuring links to original reference material for each fresh chunk of code, e.g.
 
-* [ReactiveX](http://reactivex.io)
-* [ReactiveUI](https://reactiveui.net)
-* [Avalonia UI](https://avaloniaui.net)
+```cs
+// https://reactiveui.net/docs/handbook/events/#how-do-i-convert-my-own-c-events-into-observables
+Observable
+    .FromEventPattern(wndMain, nameof(wndMain.Closing))
+    .Subscribe(_ => Console.WriteLine("Main window closing..."))
+    .DisposeWith(disposables);
+```
 
 ## Samples
 
-### Hello World
+#### [Hello World](https://github.com/genejo/ReactiveAvalonia/tree/master/HelloWorld)
 
-<img  width="200" src="https://www.dropbox.com/s/uvrkxcoaekmlz0p/HelloReactiveWorld_Trailer.png?raw=1" />
+Uses a finite observable stream of timer ticks. At each tick a new
+greeting is displayed. The sample can be a template for ReactiveUI + Avalonia
+applications.
 
-### Random Buddy Stalker
+*Topics: View, ViewModel, (de)activation, timer, reactive property, type-safe bindings,
+WhenAnyValue, observable timer, UI thread and schedulers, window event.*
+
+<img  width="200" src="https://www.dropbox.com/s/ykhs4f322fwi7sx/HelloReactiveWorld_Trailer.gif?raw=1" />
+
+#### [Random Buddy Stalker](https://github.com/genejo/ReactiveAvalonia/tree/master/RandomBuddyStalker)
+
+Shows how to use async/await in a ReactiveUI context. It calls a
+dummy [(but real)](https://reqres.in) RESTful API.
+
+*Topics: command binding, ReactiveUI.Fody, Rx event pattern, WhenAnyObservable, async/await,
+timeout, json, Flurl.*
 
 <img  width="200" src="https://www.dropbox.com/s/bzt56v87b6hzpai/RandomBuddyStalker_Trailer.gif?raw=1" />
 

@@ -12,11 +12,6 @@ namespace ReactiveAvalonia.HelloWorld {
     // http://avaloniaui.net/docs/reactiveui/activation#activation-example
     // https://reactiveui.net/docs/handbook/data-binding/avalonia
     public class MainView : ReactiveWindow<MainViewModel> {
-
-        // https://reactiveui.net/docs/handbook/data-binding/avalonia
-        private TextBlock GreetingLabel => this.FindControl<TextBlock>("GreetingLabel");
-        private Window wndMain => this.FindControl<Window>("wndMain");
-
         public MainView() {
             ViewModel = new MainViewModel();
 
@@ -51,7 +46,7 @@ namespace ReactiveAvalonia.HelloWorld {
 
                         // https://reactiveui.net/docs/handbook/data-binding/
                         this
-                            .OneWayBind(ViewModel, vm => vm.Greeting, v => v.GreetingLabel.Text)
+                            .OneWayBind(ViewModel, vm => vm.Greeting, v => v.tbGreetingLabel.Text)
                             .DisposeWith(disposables);
                     });
 
@@ -62,5 +57,9 @@ namespace ReactiveAvalonia.HelloWorld {
             // https://reactiveui.net/docs/handbook/data-binding/avalonia
             AvaloniaXamlLoader.Load(this);
         }
+
+        // https://reactiveui.net/docs/handbook/data-binding/avalonia
+        private TextBlock tbGreetingLabel => this.FindControl<TextBlock>("tbGreetingLabel");
+        private Window wndMain => this.FindControl<Window>("wndMain");
     }
 }

@@ -48,23 +48,22 @@ namespace ReactiveAvalonia.RandomBuddyStalker {
                             .DisposeWith(disposables);
 
                         // At the time of writing Avalonia UI control animations are not stable.
-                        // For this reason we're manually implementing the progress bar animation.
-                        // Disclaimer: self-contained animation code snippet to the detriment of efficiency.
+                        // For this reason we're implementing the progress bar animation manually.
+                        const int BarDivisionsCount = 8;
+                        const int DivisionTimeSpan = MainViewModel.DecisionTimeMilliseconds / (BarDivisionsCount + 1);
+                        const int BarDivisionLength = MainViewModel.DecisionTimeMilliseconds / BarDivisionsCount;
                         this
                             .WhenAnyObservable(v => v._vm.TriggeringTheTimer)
                             .Where(trigger => trigger == TimerTrigger.Start)
                             .Do(trigger => {
-                                const int barDivisionsCount = 8;
-                                int divisionTimeSpan = MainViewModel.DecisionTimeMilliseconds / (barDivisionsCount + 1);
-                                int barDivisionLength = MainViewModel.DecisionTimeMilliseconds / barDivisionsCount;
                                 Observable
                                     .Timer(
                                         TimeSpan.FromMilliseconds(0),
-                                        TimeSpan.FromMilliseconds(divisionTimeSpan),
+                                        TimeSpan.FromMilliseconds(DivisionTimeSpan),
                                         RxApp.MainThreadScheduler)
-                                    .TakeWhile(item => item <= barDivisionsCount && _vm.IsTimerRunning)
+                                    .TakeWhile(item => item <= BarDivisionsCount && _vm.IsTimerRunning)
                                     .Subscribe(divisionsSoFar => {
-                                        int remainingTime = (int)divisionsSoFar * barDivisionLength;
+                                        int remainingTime = (int)divisionsSoFar * BarDivisionLength;
                                         pbRemainingTime.Value = remainingTime;
                                     });
                             })
